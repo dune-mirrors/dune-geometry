@@ -22,7 +22,9 @@ exclude_from_headercheck(
   tensorproductquadrature.hh")
 
 #build the library libquadraturerules
-dune_add_library(quadraturerules OBJECT
+dune_library_add_sources(
+  dunegeometry
+  SOURCES
   gauss.cc
   jacobi_1_0.cc
   jacobi_2_0.cc

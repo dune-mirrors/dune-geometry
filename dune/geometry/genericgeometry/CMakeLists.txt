@@ -10,7 +10,9 @@ install(FILES
   topologytypes.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/geometry/genericgeometry)
 
-dune_add_library(genericgeometry OBJECT
+dune_library_add_sources(
+  dunegeometry
+  SOURCES
   referencedomain.cc
   subtopologies.cc
   )

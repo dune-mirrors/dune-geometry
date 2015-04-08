@@ -20,10 +20,13 @@ include(DuneMacros)
 # start a dune project with information from dune.module
 dune_project()
 
+dune_enable_all_packages(
+  MODULE_LIBRARIES dunegeometry
+  )
+
 add_subdirectory("m4")
 add_subdirectory("dune")
 add_subdirectory("doc")
-add_subdirectory("lib")
 
 # finalize the dune project, e.g. generating config.h etc.
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
