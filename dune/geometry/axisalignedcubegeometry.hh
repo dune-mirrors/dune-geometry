@@ -3,6 +3,7 @@
 
 #ifndef DUNE_GEOMETRY_AXISALIGNED_CUBE_GEOMETRY_HH
 #define DUNE_GEOMETRY_AXISALIGNED_CUBE_GEOMETRY_HH
+#include <dune/geometry/config.hh>
 
 /** \file
     \brief A geometry implementation for axis-aligned hypercubes

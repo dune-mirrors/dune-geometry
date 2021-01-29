@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_PYTHON_GEOMETRY_QUADRATURERULES_HH
 #define DUNE_PYTHON_GEOMETRY_QUADRATURERULES_HH
+#include <dune/geometry/config.hh>
 
 #include <array>
 #include <tuple>

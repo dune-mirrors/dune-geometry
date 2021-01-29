@@ -3,6 +3,7 @@
 
 #ifndef DUNE_PYTHON_GEOMETRY_MULTILINEARGEOMETRY_HH
 #define DUNE_PYTHON_GEOMETRY_MULTILINEARGEOMETRY_HH
+#include <dune/geometry/config.hh>
 
 #include <type_traits>
 

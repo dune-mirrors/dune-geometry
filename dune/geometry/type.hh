@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_GEOMETRY_TYPE_HH
 #define DUNE_GEOMETRY_TYPE_HH
+#include <dune/geometry/config.hh>
 
 /** \file
  *  \brief A unique label for each type of element that can occur in a grid

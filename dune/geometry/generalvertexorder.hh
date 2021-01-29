@@ -3,6 +3,7 @@
 
 #ifndef DUNE_GEOMETRY_GENERALVERTEXORDER_HH
 #define DUNE_GEOMETRY_GENERALVERTEXORDER_HH
+#include <dune/geometry/config.hh>
 
 #include <algorithm>
 #include <cassert>

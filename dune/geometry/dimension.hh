@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_GEOMETRY_DIMENSION_HH
 #define DUNE_GEOMETRY_DIMENSION_HH
+#include <dune/geometry/config.hh>
 
 #include <type_traits>
 

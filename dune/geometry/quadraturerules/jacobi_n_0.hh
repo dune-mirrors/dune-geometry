@@ -1,5 +1,6 @@
 #ifndef DUNE_GEOMETRY_QUADRATURERULES_JACOBI_N_0_H
 #define DUNE_GEOMETRY_QUADRATURERULES_JACOBI_N_0_H
+#include <dune/geometry/config.hh>
 
 #include <vector>
 #include <type_traits>

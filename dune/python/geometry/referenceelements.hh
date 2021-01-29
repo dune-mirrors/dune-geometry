@@ -1,5 +1,6 @@
 #ifndef DUNE_PYTHON_GEOMETRY_REFERENCEELEMENTS_HH
 #define DUNE_PYTHON_GEOMETRY_REFERENCEELEMENTS_HH
+#include <dune/geometry/config.hh>
 
 #include <array>
 #include <functional>

@@ -3,6 +3,7 @@
 
 #ifndef DUNE_GEOMETRY_QUADRATURERULES_HH
 #define DUNE_GEOMETRY_QUADRATURERULES_HH
+#include <dune/geometry/config.hh>
 
 #include <algorithm>
 #include <iostream>

@@ -2,6 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_GEOMETRY_QUADRATURERULES_TENSORPRODUCTQUADRATURE_HH
 #define DUNE_GEOMETRY_QUADRATURERULES_TENSORPRODUCTQUADRATURE_HH
+#include <dune/geometry/config.hh>
 
 #include <algorithm>
 #include <bitset>

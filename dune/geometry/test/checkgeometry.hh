@@ -3,6 +3,7 @@
 
 #ifndef DUNE_CHECK_GEOMETRY_HH
 #define DUNE_CHECK_GEOMETRY_HH
+#include <dune/geometry/config.hh>
 
 #include <limits>
 
