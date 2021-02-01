@@ -8,15 +8,3 @@
  * The generated file will be stored in the build or install directory
  * without the file extending as dune/common/config.hh
 **/
-
-/* Define to the version of dune-geometry */
-#define DUNE_GEOMETRY_VERSION "${DUNE_GEOMETRY_VERSION}"
-
-/* Define to the major version of dune-geometry */
-#define DUNE_GEOMETRY_VERSION_MAJOR ${DUNE_GEOMETRY_VERSION_MAJOR}
-
-/* Define to the minor version of dune-geometry */
-#define DUNE_GEOMETRY_VERSION_MINOR ${DUNE_GEOMETRY_VERSION_MINOR}
-
-/* Define to the revision of dune-geometry */
-#define DUNE_GEOMETRY_VERSION_REVISION ${DUNE_GEOMETRY_VERSION_REVISION}
