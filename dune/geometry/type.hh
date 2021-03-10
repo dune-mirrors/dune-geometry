@@ -18,243 +18,6 @@
 
 namespace Dune
 {
-
-  namespace Impl
-  {
-
-    enum TopologyConstruction { pyramidConstruction = 0, prismConstruction = 1 };
-
-
-
-    // Basic Topology Types
-    // --------------------
-
-    struct Point
-    {
-      static const unsigned int dimension = 0;
-      static const unsigned int numCorners = 1;
-
-      static const unsigned int id = 0;
-
-      static std::string name () { return "p"; }
-    };
-
-
-    template< class BaseTopology >
-    struct Prism
-    {
-      static const unsigned int dimension = BaseTopology::dimension + 1;
-      static const unsigned int numCorners = 2 * BaseTopology::numCorners;
-
-      static const unsigned int id = BaseTopology::id | ((unsigned int)prismConstruction << (dimension-1));
-
-      static std::string name () { return BaseTopology::name() + "l"; }
-    };
-
-
-    template< class BaseTopology >
-    struct Pyramid
-    {
-      static const unsigned int dimension = BaseTopology::dimension + 1;
-      static const unsigned int numCorners = BaseTopology::numCorners + 1;
-
-      static const unsigned int id = BaseTopology::id | ((unsigned int)pyramidConstruction << (dimension-1));
-
-      static std::string name () { return BaseTopology::name() + "o"; }
-    };
-
-
-
-    // Properties of Topologies
-    // ------------------------
-
-    template< class Topology >
-    struct IsSimplex
-      : public std::integral_constant< bool, (Topology::id >> 1) == 0 >
-    {};
-
-    template< class Topology >
-    struct IsCube
-      : public std::integral_constant< bool,  (Topology::id | 1) == (1 << Topology::dimension) - 1 >
-    {};
-
-
-
-    // Dynamic Topology Properties
-    // ---------------------------
-
-    /** \brief obtain the number of topologies of a given dimension
-     *
-     *  \note Valid topology ids are 0,...,numTopologies(dim)-1.
-     *
-     *  \param[in]  dim  dimension
-     *
-     *  \returns number of topologies for the dimension
-     */
-    inline static unsigned int numTopologies ( int dim ) noexcept
-    {
-      return (1u << dim);
-    }
-
-    /** \brief check whether a pyramid construction was used to create a given
-     *         codimension
-     *
-     *  \param[in]  topologyId  id of the topology
-     *  \param[in]  dim         dimension of the topology
-     *  \param[in]  codim       codimension for which the information is desired
-     *                          (defaults to 0)
-     *
-     *  \returns true, if a pyramid construction was used to generate the
-     *           codimension the topology.
-     */
-    inline bool static isPyramid ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
-    {
-      assert( (dim > 0) && (topologyId < numTopologies( dim )) );
-      assert( (0 <= codim) && (codim < dim) );
-      return (((topologyId & ~1) & (1u << (dim-codim-1))) == 0);
-    }
-
-    /** \brief check whether a prism construction was used to create a given
-     *         codimension
-     *
-     *  \param[in]  topologyId  id of the topology
-     *  \param[in]  dim         dimension of the topology
-     *  \param[in]  codim       codimension for which the information is desired
-     *                          (defaults to 0)
-     *
-     *  \returns true, if a prism construction was used to generate the
-     *           codimension the topology.
-     */
-    inline static bool isPrism ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
-    {
-      assert( (dim > 0) && (topologyId < numTopologies( dim )) );
-      assert( (0 <= codim) && (codim < dim) );
-      return (( (topologyId | 1) & (1u << (dim-codim-1))) != 0);
-    }
-
-    /** \brief check whether a specific topology construction was used to create a
-     *         given codimension
-     *
-     *  \param[in]  construction  construction to check for
-     *  \param[in]  topologyId    id of the topology
-     *  \param[in]  dim           dimension of the topology
-     *  \param[in]  codim         codimension for which the information is desired
-     *                            (defaults to 0)
-     *
-     *  \returns true, if construction was used to generate the codimension the
-     *           topology.
-     */
-    inline static bool isTopology ( TopologyConstruction construction, unsigned int topologyId, int dim, int codim = 0 ) noexcept
-    {
-      assert( (dim > 0) && (topologyId < numTopologies( dim )) );
-      assert( (0 <= codim) && (codim <= dim) );
-      return (codim >= (dim-1)) || (((topologyId >> (dim-codim-1)) & 1) == (unsigned int)construction);
-    }
-
-    /** \brief obtain the base topology of a given codimension
-     *
-     *  \param[in]  topologyId    id of the topology
-     *  \param[in]  dim           dimension of the topology
-     *  \param[in]  codim         codimension for which the information is desired
-     *                            (defaults to 1)
-     */
-    inline static unsigned int baseTopologyId ( unsigned int topologyId, int dim, int codim = 1 ) noexcept
-    {
-      assert( (dim >= 0) && (topologyId < numTopologies( dim )) );
-      assert( (0 <= codim) && (codim <= dim) );
-      return topologyId & ((1u << (dim-codim)) - 1);
-    }
-
-
-
-    // SimplexTopology
-    // ---------------
-
-    template< unsigned int dim >
-    struct SimplexTopology
-    {
-      typedef Pyramid< typename SimplexTopology< dim-1 >::type > type;
-    };
-
-    template<>
-    struct SimplexTopology< 0 >
-    {
-      typedef Point type;
-    };
-
-
-
-    // CubeTopology
-    // ------------
-
-    template< unsigned int dim >
-    struct CubeTopology
-    {
-      typedef Prism< typename CubeTopology< dim-1 >::type > type;
-    };
-
-    template<>
-    struct CubeTopology< 0 >
-    {
-      typedef Point type;
-    };
-
-
-
-    // PyramidTopology
-    // ---------------
-
-    template< unsigned int dim >
-    struct PyramidTopology
-    {
-      typedef Pyramid< typename CubeTopology< dim-1 >::type > type;
-    };
-
-
-
-    // PrismTopology
-    // -------------
-
-    template< unsigned int dim >
-    struct PrismTopology
-    {
-      typedef Prism< typename SimplexTopology< dim-1 >::type > type;
-    };
-
-
-
-
-    // IfTopology
-    // ----------
-
-    template< template< class > class Operation, int dim, class Topology = Point >
-    struct IfTopology
-    {
-      template< class... Args >
-      static auto apply ( unsigned int topologyId, Args &&... args )
-      {
-        if( topologyId & 1 )
-          return IfTopology< Operation, dim-1, Prism< Topology > >::apply( topologyId >> 1, std::forward< Args >( args )... );
-        else
-          return IfTopology< Operation, dim-1, Pyramid< Topology > >::apply( topologyId >> 1, std::forward< Args >( args )... );
-      }
-    };
-
-    template< template< class > class Operation, class Topology >
-    struct IfTopology< Operation, 0, Topology >
-    {
-      template< class... Args >
-      static auto apply ( unsigned int topologyId, Args &&... args )
-      {
-        DUNE_UNUSED_PARAMETER( topologyId );
-        return Operation< Topology >::apply( std::forward< Args >( args )... );
-      }
-    };
-
-  } // namespace Impl
-
-
-
   // GeometryType
   // -------------
 
@@ -468,6 +231,30 @@ namespace Dune
       return ! none_ && ((topologyId_ ^ ((1 << dim_)-1)) >> 1 == 0);
     }
 
+    /** brief Return true if entity was constructed with a conical product in the last step */
+    constexpr bool isCone() const {
+      return ! none_ && (((topologyId_ & ~1) & (1u << (dim_-1))) == 0);
+    }
+    /** brief Return true if entity was constructed with a tensor product in the last step */
+    constexpr bool isTensor() const {
+      return ! none_ && (( (topologyId_ | 1) & (1u << (dim_-1))) != 0);
+    }
+
+    /** brief Removes the bit for the highest dimension and returns the lower-dimensional GeometryType */
+    inline constexpr GeometryType popHighest() const {
+      return GeometryType(topologyId_ & ((1 << (dim_-1))-1), dim_-1, none_);
+    }
+
+    /** brief Return GeometryType of a cone construction with the current geometry as base  */
+    inline constexpr GeometryType addCone() const {
+      return GeometryType(topologyId_ , dim_+1, none_);
+    }
+
+    /** brief Return GeometryType of a tensor construction with the current geometry as base  */
+    inline constexpr GeometryType addTensor() const {
+      return GeometryType(topologyId_ | ((1 << dim_)), dim_+1, none_);
+    }
+
     /** \brief Return true if entity is a singular of any dimension */
     constexpr bool isNone() const {
       return none_;
@@ -648,7 +435,107 @@ namespace Dune
 
   }
 
+  namespace Impl
+  {
 
+    enum TopologyConstruction { pyramidConstruction = 0, prismConstruction = 1 };
+
+    // Dynamic Topology Properties
+    // ---------------------------
+
+    /** \brief obtain the number of topologies of a given dimension
+     *
+     *  \note Valid topology ids are 0,...,numTopologies(dim)-1.
+     *
+     *  \param[in]  dim  dimension
+     *
+     *  \returns number of topologies for the dimension
+     */
+    inline static unsigned int numTopologies ( int dim ) noexcept
+    {
+      return (1u << dim);
+    }
+
+    /** \brief check whether a pyramid construction was used to create a given
+     *         codimension
+     *
+     *  \param[in]  topologyId  id of the topology
+     *  \param[in]  dim         dimension of the topology
+     *  \param[in]  codim       codimension for which the information is desired
+     *                          (defaults to 0)
+     *
+     *  \returns true, if a pyramid construction was used to generate the
+     *           codimension the topology.
+     */
+    inline bool static isPyramid ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
+    {
+      assert( (dim > 0) && (topologyId < numTopologies( dim )) );
+      assert( (0 <= codim) && (codim < dim) );
+      return (((topologyId & ~1) & (1u << (dim-codim-1))) == 0);
+    }
+
+    /** \brief check whether a prism construction was used to create a given
+     *         codimension
+     *
+     *  \param[in]  topologyId  id of the topology
+     *  \param[in]  dim         dimension of the topology
+     *  \param[in]  codim       codimension for which the information is desired
+     *                          (defaults to 0)
+     *
+     *  \returns true, if a prism construction was used to generate the
+     *           codimension the topology.
+     */
+    inline static bool isPrism ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
+    {
+      assert( (dim > 0) && (topologyId < numTopologies( dim )) );
+      assert( (0 <= codim) && (codim < dim) );
+      return (( (topologyId | 1) & (1u << (dim-codim-1))) != 0);
+    }
+
+
+    /** \brief obtain the base topology of a given codimension
+     *
+     *  \param[in]  topologyId    id of the topology
+     *  \param[in]  dim           dimension of the topology
+     *  \param[in]  codim         codimension for which the information is desired
+     *                            (defaults to 1)
+     */
+    inline static unsigned int baseTopologyId ( unsigned int topologyId, int dim, int codim = 1 ) noexcept
+    {
+      assert( (dim >= 0) && (topologyId < numTopologies( dim )) );
+      assert( (0 <= codim) && (codim <= dim) );
+      return topologyId & ((1u << (dim-codim)) - 1);
+    }
+
+    // IfTopology
+    // ----------
+
+    //template< template< class > class Operation, int dim, class Topology = Point >
+    template< template< GeometryType::Id > class Operation, int dim, GeometryType::Id geometryId = GeometryTypes::vertex >
+    struct IfTopology
+    {
+      static constexpr GeometryType geometry = geometryId;
+      template< class... Args >
+      static auto apply ( unsigned int topologyId, Args &&... args )
+      {
+        if( topologyId & 1 )
+          return IfTopology< Operation, dim-1, geometry.addTensor() >::apply( topologyId >> 1, std::forward< Args >( args )... );
+        else
+          return IfTopology< Operation, dim-1, geometry.addCone() >::apply( topologyId >> 1, std::forward< Args >( args )... );
+      }
+    };
+
+    template< template< GeometryType::Id > class Operation, GeometryType::Id geometryId >
+    struct IfTopology< Operation, 0, geometryId>
+    {
+      template< class... Args >
+      static auto apply ( unsigned int topologyId, Args &&... args )
+      {
+        DUNE_UNUSED_PARAMETER( topologyId );
+        return Operation< geometryId >::apply( std::forward< Args >( args )... );
+      }
+    };
+  } // namespace Impl
 } // namespace Dune
 
 #endif // DUNE_GEOMETRY_TYPE_HH

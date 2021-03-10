@@ -61,12 +61,12 @@ namespace Dune
 
   private:
     // Internal maker class used in ifTopology helper
-    template< class Topology >
+    template< GeometryType::Id geometryId >
     struct Maker
     {
       static Object *apply ( const Key &key )
       {
-        return create< Topology >( key );
+        return create< geometryId >( key );
       };
     };
   };
@@ -92,11 +92,11 @@ namespace Dune
     }
 
     //! @copydoc TopologyFactory::create(const Key &key)
-    template< class Topology >
+    template< GeometryType::Id geometryId >
     static auto create ( const Key &key )
-      -> std::enable_if_t< Topology::dimension == dimension, Object * >
+      -> std::enable_if_t< static_cast<GeometryType>(geometryId).dim() == dimension, Object * >
     {
-      return instance().template getObject< Topology >( key );
+      return instance().template getObject< geometryId >( key );
     }
 
     //! @copydoc TopologyFactory::release
@@ -134,12 +134,13 @@ namespace Dune
       return object.get();
     }
 
-    template< class Topology >
+    template< GeometryType::Id geometryId >
     Object *getObject ( const Key &key )
     {
-      auto &object = find( Topology::id, key );
+      static constexpr GeometryType geometry = geometryId;
+      auto &object = find( geometry.id(), key );
       if( !object )
-        object.reset( Factory::template create< Topology >( key ) );
+        object.reset( Factory::template create< geometry >( key ) );
       return object.get();
     }
 
