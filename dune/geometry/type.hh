@@ -519,9 +519,15 @@ namespace Dune
       static auto apply ( unsigned int topologyId, Args &&... args )
       {
         if( topologyId & 1 )
-          return IfTopology< Operation, dim-1, geometry.addTensor() >::apply( topologyId >> 1, std::forward< Args >( args )... );
+        {
+          static constexpr GeometryType::Id tensorId = geometry.addTensor();
+          return IfTopology< Operation, dim-1, tensorId >::apply( topologyId >> 1, std::forward< Args >( args )... );
+        }
         else
-          return IfTopology< Operation, dim-1, geometry.addCone() >::apply( topologyId >> 1, std::forward< Args >( args )... );
+        {
+          static constexpr GeometryType::Id coneId = geometry.addCone();
+          return IfTopology< Operation, dim-1, coneId >::apply( topologyId >> 1, std::forward< Args >( args )... );
+        }
       }
     };
 
