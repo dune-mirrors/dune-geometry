@@ -18,11 +18,11 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
 include(DuneMacros)
 
 # start a dune project with information from dune.module
-dune_project()
+dune_project(dunegeometry)
+target_link_libraries(dunegeometry PUBLIC dunecommon)
 
 add_subdirectory("dune")
 add_subdirectory("doc")
-add_subdirectory("lib")
 
 # if Python bindings are enabled, include necessary sub directories.
 if( DUNE_ENABLE_PYTHONBINDINGS )
