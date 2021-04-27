@@ -14,12 +14,25 @@ before_script:
 debian-11-gcc-9-17-python:
   image: registry.dune-project.org/docker/ci/debian:11
   script: duneci-standard-test
+  stage: test
   variables:
-    DUNECI_TOOLCHAIN:   gcc-9-17
-    # during dune-py build this variable is used - do know a way to access
-    # the CMAKE_FLAGS used to build the modules...
-    DUNE_CMAKE_FLAGS:   "-DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_FLAGS='-std=c++17 -O2 -g -Wall -fdiagnostics-color=always' -DDUNE_ENABLE_PYTHONBINDINGS=ON -DDUNE_MAX_TEST_CORES=4 -DDUNE_PYTHON_ADDITIONAL_PIP_PARAMS='-i https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple' -DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Vc=TRUE -DCMAKE_DISABLE_FIND_Doxygen=TRUE"
-    # cmake flags we use for all dune moudle - important is that build shared libs is set (need some better way of doing this)
+    DUNECI_TOOLCHAIN:  gcc-9-17
+    # the CMAKE_FLAGS used to build the modules - set python bindings to on
+    DUNE_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
+    # cmake flags we use for all dune module
+    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    # add some logging output from the python bindings
+    DUNE_LOG_LEVEL:     DEBUG
+  tags: [duneci]
+ubuntu-20.04-clang-10-20-python:
+  image: registry.dune-project.org/docker/ci/ubuntu:20.04
+  script: duneci-standard-test
+  stage: test
+  variables:
+    DUNECI_TOOLCHAIN: clang-10-20
+    # the CMAKE_FLAGS used to build the modules - set python bindings to on
+    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
+    # cmake flags we use for all dune module
     DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
     # add some logging output from the python bindings
     DUNE_LOG_LEVEL:     DEBUG
