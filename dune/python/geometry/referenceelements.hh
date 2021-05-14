@@ -15,6 +15,8 @@
 #include <dune/python/geometry/quadraturerules.hh>
 #include <dune/python/pybind11/pybind11.h>
 
+#include <dune/geometry/docheader.hh>
+
 namespace Dune
 {
 
@@ -140,7 +142,7 @@ namespace Dune
 
       cls.def( "subEntity", [] ( const RefElement &self, int i, int c, int ii, int cc ) {
           return detail::referenceElementSubEntity( self, i, c, ii, cc );
-        } );
+        }, DOC(Dune,Geo,ReferenceElement,subEntity) );
       cls.def( "subEntity", [] ( const RefElement &self, std::tuple< int, int > e, std::tuple< int, int > ee ) {
           return detail::referenceElementSubEntity( self, std::get< 0 >( e ), std::get< 1 >( e ), std::get< 0 >( ee ), std::get< 1 >( ee ) );
         } );
@@ -161,7 +163,7 @@ namespace Dune
 
       cls.def( "position", [] ( const RefElement &self, int i, int c ) {
           return detail::referenceElementPosition( self, i, c );
-        }, "index"_a, "codim"_a );
+        }, "index"_a, "codim"_a, DOC(Dune, Geo, ReferenceElement, position) );
       cls.def( "position", [] ( const RefElement &self, std::tuple< int, int > e ) {
           return detail::referenceElementPosition( self, std::get< 0 >( e ), std::get< 1 >( e ) );
         }, "subentity"_a );

@@ -30,3 +30,5 @@ install(FILES test/checkgeometry.hh
 dune_add_library(geometry OBJECT
   referenceelementimplementation.cc
   )
+
+make_pybind11_docu(referenceelement.hh quadraturerules.hh)
