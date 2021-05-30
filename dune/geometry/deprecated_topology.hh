@@ -5,6 +5,9 @@
 
 #include <dune/geometry/type.hh>
 
+
+namespace Dune
+{
   namespace Impl
   {
 
@@ -165,4 +168,5 @@
     };
 
   } // namespace Impl
+} // namespace Dune
 #endif
