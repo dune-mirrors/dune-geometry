@@ -3,6 +3,8 @@
 #ifndef DUNE_DEPRECATED_TOPOLOGY_HH
 #define DUNE_DEPRECATED_TOPOLOGY_HH
 
+#include <dune/geometry/type.hh>
+
   namespace Impl
   {
 
@@ -139,7 +141,7 @@
     // IfTopology
     // ----------
 
-    template< template< class > class Operation, int dim, class Topology = Point >
+    template< template< class > class Operation, int dim, class Topology = GeometryTypes::vertex >
     struct [[deprecated("Use IfGeometryType instead.")]] IfTopology
     {
       template< class... Args >
