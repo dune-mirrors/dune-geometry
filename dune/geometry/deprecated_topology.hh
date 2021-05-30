@@ -141,7 +141,7 @@
     // IfTopology
     // ----------
 
-    template< template< class > class Operation, int dim, class Topology = GeometryTypes::vertex >
+    template< template< class > class Operation, int dim, class Topology = Dune::GeometryTypes::vertex >
     struct [[deprecated("Use IfGeometryType instead.")]] IfTopology
     {
       template< class... Args >
