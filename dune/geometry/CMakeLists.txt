@@ -9,6 +9,7 @@ install(FILES
   dimension.hh
   generalvertexorder.hh
   multilineargeometry.hh
+  parametrizedgeometry.hh
   quadraturerules.hh
   referenceelement.hh
   referenceelementimplementation.hh
