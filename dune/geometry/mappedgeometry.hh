@@ -75,13 +75,32 @@ struct DefaultLocalGeometry
 
 /// \brief Geometry parametrized by a LocalFunction and a LocalGeometry
 /**
- * \tparam Map  Mapping mapping coordinates, must be differentiable
- * \tparam LG   A local geometry type defining the local coordinates and the input coordinates
- *              for the local function. See \ref DefaultLocalGeometry
+ * \tparam Map  Mapping of element local coordinates to world coordinates, must be differentiable
+ * \tparam LG   A local geometry type defining the local coordinates of the geometry and its
+ *              transformation into local coordinates of the element the mapping the bound to.
+ *              See \ref DefaultLocalGeometry
  * \tparam TraitsType  Parameters of the geometry, see \ref MappedGeometryTraits
  *
- *  The requirements on the traits are documented along with their default,
- *  MappedGeometryTraits.
+ * This class represents a geometry that is parametrized by the chained mapping of a local geometry
+ * mapping and the given function. Thereby, the local geometry mapping related coordinates in
+ * subentities of an element to element coordinates and the function then maps element coordinates
+ * to the world coordinates representing the actual geometry.
+ *
+ * Typical choices for the local geometry are
+ * - An identity mapping, if the geometry represents an element geometry.
+ * - An intersection geometry-in-inside or geometry-in-outside mapping.
+ * - A reference-element sub-entity geometry mapping.
+ *
+ * The function (or geometry mapping) is a local function in terms of the dune-functions concept. It
+ * requires the following members:
+ * - `bind(LocalContext)`: Initialize the mapping on a given local context, i.e., an element or
+ *                         entity or intersection.
+ * - `localContext()`: Return the element (or entity or intersection) the mapping is bound to.
+ * - `operator()(LG::GlobalCoordinate)`: Evaluation in local-context coordinates.
+ * - `derivative(Map)`: A free function returning a local function that represents the first
+ *                      derivative of the mapping.
+ *
+ * The requirements on the traits are documented along with their default, `MappedGeometryTraits`.
  **/
 template <class Map, class LG,
           class TraitsType = MappedGeometryTraits<typename LG::LocalCoordinate::value_type>>
@@ -112,9 +131,6 @@ public:
   /// type of jacobian inverse transposed
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
-  /// type of the extended Weingarten map
-  using NormalGradient = FieldMatrix<ctype, coorddimension, coorddimension>;
-
 public:
   /// type of reference element
   using ReferenceElements = Dune::ReferenceElements<ctype, mydimension>;
@@ -130,13 +146,13 @@ protected:
   static const bool isFlatAffine
     = hasSingleGeometryType && ((Traits::template hasSingleGeometryType<mydimension>::topologyId) >> 1 == 0);
 
-  /// type of coordinate transformation for subEntities to codim=0 entities
+  // type of coordinate transformation for subEntities to codim=0 entities
   using LocalGeometry = LG;
 
-  /// type of the mapping representation the geometry parametrization
+  // type of the mapping representation the geometry parametrization
   using Mapping = Map;
 
-  /// type of a mapping representing the derivative of `Map`
+  // type of a mapping representing the derivative of `Map`
   using DerivativeMapping = std::decay_t<decltype(derivative(std::declval<Map>()))>;
 
 public:
@@ -145,7 +161,6 @@ public:
    *  \param[in]  refElement     reference element for the geometry
    *  \param[in]  mapping        mapping for the parametrization of the geometry (stored by value)
    *  \param[in]  localGeometry  local geometry for local coordinate transformation
-   *
    **/
   template <class Map_, class LG_>
   MappedGeometry (const ReferenceElement& refElement, Map_&& mapping, LG_&& localGeometry)
@@ -182,7 +197,7 @@ public:
   {}
 
 
-  /// \brief Is this mapping affine? No! Since we do not know anything about the mapping.
+  /// \brief Is this mapping affine? Not in general, since we don't know anything about the mapping.
   bool affine () const
   {
     return false;
@@ -544,8 +559,6 @@ private:
   mutable std::optional<DerivativeMapping> dMapping_;
   mutable std::optional<FlatGeometry> flatGeometry_;
   mutable std::optional<HostGeometry> hostGeometry_;
-  mutable std::vector<GlobalCoordinate> nCoefficients_;
-  mutable std::vector<GlobalCoordinate> nGradients_;
 };
 
 // deduction guides
