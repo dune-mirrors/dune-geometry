@@ -239,6 +239,18 @@ namespace Dune
         }
     }
 
+    ctype computed_volume = 0.0;
+    for (const auto& ip : Dune::QuadratureRules<ctype, mydim>::rule(geometry.type(), 10))
+    {
+      computed_volume += geometry.integrationElement(ip.position()) * ip.weight();
+    }
+
+    if( abs(volume - computed_volume) > tolerance )
+    {
+      std::cerr << "Error: Geometry has wrong volume (" << volume << " != " << computed_volume << ")" << std::endl;
+      pass = false;
+    }
+
     return pass;
   }
 
