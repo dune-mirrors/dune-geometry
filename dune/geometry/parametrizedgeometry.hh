@@ -370,7 +370,6 @@ public:
    *
    * \param local   The local coordinate where to evaluate the normal-vector gradient
    **/
-  template <class... Args>
   NormalGradient normalGradient (const LocalCoordinate& local) const
   {
     return normalGradientImpl(local, jacobianInverseTransposed(local));
@@ -383,7 +382,6 @@ public:
    * \param jiT   Evaluation of the JacobianInverseTransposed at the local coordinate `local`.
    *              This can be passed, if already computed elsewhere.
    **/
-  template <class... Args>
   NormalGradient normalGradientImpl (const LocalCoordinate& local,
                                      const JacobianInverseTransposed& jiT) const
   {
@@ -463,8 +461,7 @@ public:
   }
 
   /// \brief Obtain the volume of the mapping's image by given quadrature rules
-  template <class QuadRule>
-  Volume volume (const QuadRule& quadRule) const
+  Volume volume (const QuadratureRule<ctype, mydimension>& quadRule) const
   {
     Volume vol(0);
     for (const auto& qp : quadRule)
