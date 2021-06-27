@@ -65,7 +65,8 @@ struct ParametrizedGeometryTraits
 
 /// \brief Curved geometry implementation based on local-basis function parametrization
 /**
- *  Parametrization of the geometry by any localfunction interpolated into a local finite-element space.
+ *  Parametrization of the geometry by any localfunction interpolated into a local finite-element
+ *  space.
  *
  *  \tparam  LFE         Type of a local finite-element
  *  \tparam  cdim        coordinate dimension
@@ -133,6 +134,10 @@ public:
    *  \param[in]  localFE     Local finite-element to use for the parametrization
    *  \param[in]  vertices    Coefficients of the local interpolation into the basis
    *
+   *  The vertices are the coefficients of a local interpolation in the local finite-element. For
+   *  Lagrange local bases, these correspond to vertices on the curved geometry in the local
+   *  Lagrange nodes.
+   *
    *  \note The vertices are stored internally, so if possible move an external vertex storage
    *        to this constructor
    **/
@@ -150,17 +155,20 @@ public:
   /**
    *  \param[in]  refElement  reference element for the geometry
    *  \param[in]  localFE     Local finite-element to use for the parametrization
-   *  \param[in]  param       parametrization function with signature GlobalCoordinate(LocalCoordinate)`
+   *  \param[in]  param       parametrization function with signature
+   *                          `GlobalCoordinate(LocalCoordinate)`
+   *
+   *  The parametrization function is not stored in the class, but interpolated into the local
+   *  finite-element basis and the computed interpolation coefficients are stored.
    **/
-  template <class Parametrization,
-    std::enable_if_t<Std::is_callable<Parametrization(LocalCoordinate), GlobalCoordinate>::value, bool> = true>
+  template <class Param,
+    std::enable_if_t<Std::is_callable<Param(LocalCoordinate),GlobalCoordinate>::value, bool> = true>
   ParametrizedGeometry (const ReferenceElement& refElement, const LocalFiniteElement& localFE,
-                        Parametrization&& param)
+                        Param&& param)
     : refElement_(refElement)
     , localFE_(localFE)
   {
-    const auto& localInterpolation = localFE_.localInterpolation();
-    localInterpolation.interpolate(param, vertices_);
+    localFE_.localInterpolation().interpolate(param, vertices_);
   }
 
   /// \brief Constructor, forwarding to the other constructors that take a reference-element
@@ -183,19 +191,13 @@ public:
     : ParametrizedGeometry(that.refElement_, std::move(that.localFE_), std::move(that.vertices_))
   {}
 
-  /// \brief Copy assignment operator
-  ParametrizedGeometry& operator= (const ParametrizedGeometry& that)
+  /// \brief Copy/Move assignment operator
+  ParametrizedGeometry& operator= (ParametrizedGeometry that)
   {
-    assert(refElement_ == that.refElement_);
-    vertices_ = that.vertices_;
-    return *this;
-  }
-
-  /// \brief Move assignment operator
-  ParametrizedGeometry& operator= (ParametrizedGeometry&& that)
-  {
-    assert(refElement_ == that.refElement_);
-    vertices_ = std::move(that.vertices_);
+    using std::swap;
+    swap(refElement_, that.refElement_);
+    swap(localFE_, that.localFE_);
+    swap(vertices_, that.vertices_);
     return *this;
   }
 

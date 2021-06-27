@@ -27,9 +27,9 @@ static bool testParametrizedGeometry ()
   auto lfe = LFE{};
 
   // mapping to generate coordinates from reference-element corners
-  auto f = [](Dune::FieldVector<ctype,gt.dim()> const& x) {
+  auto f = [&](Dune::FieldVector<ctype,gt.dim()> const& x) {
     Dune::FieldVector<ctype,cdim> y;
-    for (int i = 0; i < mydim; ++i)
+    for (std::size_t i = 0; i < gt.dim(); ++i)
       y[i] = x[i] + i;
     return y;
   };
