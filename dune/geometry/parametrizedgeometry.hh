@@ -362,68 +362,6 @@ public:
     }();
   }
 
-  /// \brief Construct the surface gradient (extended Weingarten map) of the normal vector field
-  /**
-   * First, interpolate the normal vector field into a local Lagrange basis, then take the
-   * derivative of this interpolated field, normalized it and project it into the tangential
-   * plane.
-   *
-   * \param local   The local coordinate where to evaluate the normal-vector gradient
-   **/
-  NormalGradient normalGradient (const LocalCoordinate& local) const
-  {
-    return normalGradientImpl(local, jacobianInverseTransposed(local));
-  }
-
-  /// \brief Construct the surface gradient (extended Weingarten map) of the normal vector field
-  /**
-   * See \ref normalGradient() but with additional parameter.
-   *
-   * \param jiT   Evaluation of the JacobianInverseTransposed at the local coordinate `local`.
-   *              This can be passed, if already computed elsewhere.
-   **/
-  NormalGradient normalGradientImpl (const LocalCoordinate& local,
-                                     const JacobianInverseTransposed& jiT) const
-  {
-    if (nCoefficients_.empty()) {
-      // create local discrete function of normal vectors by interpolation of the geometry normal
-      localFE_.localInterpolation().interpolate(
-        [&](const LocalCoordinate& l) { return this->normalDirection(l); }, nCoefficients_);
-    }
-
-    // Interpolated normal vector evaluated at local coordinate
-    localFE_.localBasis().evaluateFunction(local, nShapeValues_);
-    GlobalCoordinate nh(0);
-    for (std::size_t j = 0; j < nShapeValues_.size(); ++j)
-      nh.axpy(nShapeValues_[j], nCoefficients_[j]);
-    auto nh_nrm = nh.two_norm();
-    nh /= nh_nrm;
-
-    // P = I - n x n
-    NormalGradient Ph;
-    for (int r = 0; r < coorddimension; ++r)
-      for (int s = 0; s < coorddimension; ++s)
-        Ph[r][s] = (r == s ? 1 : 0) - nh[r]*nh[s];
-
-    // Compute the shape function gradients on the real element
-    localFE_.localBasis().evaluateJacobian(local, nShapeGradients_);
-    nGradients_.resize(nShapeGradients_.size());
-    for (std::size_t j = 0; j < nGradients_.size(); ++j)
-      jiT.mv(nShapeGradients_[j][0], nGradients_[j]);
-
-    // Normal gradient evaluated at local coordinate
-    NormalGradient H(0);
-    for (std::size_t j = 0; j < nGradients_.size(); ++j)
-      for (int r = 0; r < coorddimension; ++r)
-        for (int s = 0; s < coorddimension; ++s)
-          H[r][s] += nGradients_[j][s] * nCoefficients_[j][r];
-    H /= nh_nrm;
-    H.leftmultiply(Ph);
-    H.rightmultiply(Ph);
-
-    return H;
-  }
-
   ///  \brief Obtain the integration element
   /**
    *  If the Jacobian of the mapping is denoted by \f$J(x)\f$, the integration
@@ -504,6 +442,12 @@ public:
   friend ReferenceElement referenceElement (const ParametrizedGeometry& geometry)
   {
     return geometry.refElement();
+  }
+
+  /// \brief Obtain the local finite-element
+  const LocalFiniteElement& finiteElement () const
+  {
+    return localFE_;
   }
 
   /// \brief Obtain the coefficients of the parametrization
