@@ -19,8 +19,12 @@ static bool checkNormal (const Dune::FieldVector<ctype,cdim>& n,
 {
   using std::abs;
   bool pass = true;
-  for (int i = 0; i < mydim; ++i)
-    pass &= abs(n.dot(Jt[i])) < std::numeric_limits<ctype>::epsilon();
+  for (int i = 0; i < mydim; ++i) {
+    if (abs(n.dot(Jt[i])) > std::numeric_limits<ctype>::epsilon()) {
+      std::cerr << "Error: normal is not orthogonal to columns of Jacobian." << std::endl;
+      pass = false;
+    }
+  }
   return pass;
 }
 
@@ -132,6 +136,9 @@ int main ( int argc, char **argv )
   pass &= testParametrizedGeometry< double >();
   std::cout << ">>> Checking ctype = float" << std::endl;
   pass &= testParametrizedGeometry< float >();
+
+  if (!pass)
+    std::cerr << "test failed!" << std::endl;
 
   return (pass ? 0 : 1);
 }
