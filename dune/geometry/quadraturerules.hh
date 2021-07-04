@@ -76,7 +76,7 @@ namespace Dune {
   /** \brief Defines an \p enum for currently available quadrature rules.
       \ingroup Quadrature
    */
-  enum class QuadratureType {
+  enum class QuadratureType : int {
       /** \brief Gauss-Legendre rules (default)
       *
       *  -1D: Gauss-Jacobi rule with parameters \f$\alpha = \beta =0 \f$, i.e. for integrals with a constant weight function.
@@ -239,9 +239,9 @@ namespace Dune {
       static std::vector<std::pair< // indexed by quadrature type
         std::once_flag,
         GeometryTypeVector
-        > > quadratureCache(QuadratureType::size);
+        > > quadratureCache(int(QuadratureType::size));
 
-      auto & quadratureTypeLevel = quadratureCache[qt];
+      auto & quadratureTypeLevel = quadratureCache[int(qt)];
       std::call_once(quadratureTypeLevel.first, initGeometryTypeVector,
                      &quadratureTypeLevel.second);
 
