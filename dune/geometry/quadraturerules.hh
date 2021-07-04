@@ -76,8 +76,7 @@ namespace Dune {
   /** \brief Defines an \p enum for currently available quadrature rules.
       \ingroup Quadrature
    */
-  namespace QuadratureType {
-    enum Enum {
+  enum class QuadratureType : int {
       /** \brief Gauss-Legendre rules (default)
       *
       *  -1D: Gauss-Jacobi rule with parameters \f$\alpha = \beta =0 \f$, i.e. for integrals with a constant weight function.
@@ -141,8 +140,7 @@ namespace Dune {
        */
       GaussRadauRight = 6,
       size
-    };
-  }
+  };
 
   /** \brief Abstract base class for quadrature rules
       \ingroup Quadrature
@@ -201,7 +199,7 @@ namespace Dune {
     typedef Dune::QuadratureRule<ctype, dim> QuadratureRule;
     //! \brief a quadrature rule (for each quadrature order, geometry type,
     //!        and quadrature type)
-    static void initQuadratureRule(QuadratureRule *qr, QuadratureType::Enum qt,
+    static void initQuadratureRule(QuadratureRule *qr, QuadratureType qt,
                                    const GeometryType &t, int p)
     {
       *qr = QuadratureRuleFactory<ctype,dim>::rule(t,p,qt);
@@ -212,7 +210,7 @@ namespace Dune {
     //! \brief initialize the vector indexed by the quadrature order (for each
     //!        geometry type and quadrature type)
     static void initQuadratureOrderVector(QuadratureOrderVector *qov,
-                                          QuadratureType::Enum qt,
+                                          QuadratureType qt,
                                           const GeometryType &t)
     {
       if(dim == 0)
@@ -232,7 +230,7 @@ namespace Dune {
     }
 
     //! real rule creator
-    DUNE_EXPORT const QuadratureRule& _rule(const GeometryType& t, int p, QuadratureType::Enum qt=QuadratureType::GaussLegendre)
+    DUNE_EXPORT const QuadratureRule& _rule(const GeometryType& t, int p, QuadratureType qt=QuadratureType::GaussLegendre)
     {
       assert(t.dim()==dim);
 
@@ -241,9 +239,9 @@ namespace Dune {
       static std::vector<std::pair< // indexed by quadrature type
         std::once_flag,
         GeometryTypeVector
-        > > quadratureCache(QuadratureType::size);
+        > > quadratureCache(static_cast<int>(QuadratureType::size));
 
-      auto & quadratureTypeLevel = quadratureCache[qt];
+      auto & quadratureTypeLevel = quadratureCache[static_cast<int>(qt)];
       std::call_once(quadratureTypeLevel.first, initGeometryTypeVector,
                      &quadratureTypeLevel.second);
 
@@ -271,19 +269,19 @@ namespace Dune {
     //! maximum quadrature order for given geometry type and quadrature type
     static unsigned
     maxOrder(const GeometryType& t,
-             QuadratureType::Enum qt=QuadratureType::GaussLegendre)
+             QuadratureType qt=QuadratureType::GaussLegendre)
     {
       return QuadratureRuleFactory<ctype,dim>::maxOrder(t,qt);
     }
 
     //! select the appropriate QuadratureRule for GeometryType t and order p
-    static const QuadratureRule& rule(const GeometryType& t, int p, QuadratureType::Enum qt=QuadratureType::GaussLegendre)
+    static const QuadratureRule& rule(const GeometryType& t, int p, QuadratureType qt=QuadratureType::GaussLegendre)
     {
       return instance()._rule(t,p,qt);
     }
 
     //! @copydoc rule
-    static const QuadratureRule& rule(const GeometryType::BasicType t, int p, QuadratureType::Enum qt=QuadratureType::GaussLegendre)
+    static const QuadratureRule& rule(const GeometryType::BasicType t, int p, QuadratureType qt=QuadratureType::GaussLegendre)
     {
       GeometryType gt(t,dim);
       return instance()._rule(gt,p,qt);
@@ -324,11 +322,11 @@ namespace Dune {
   class QuadratureRuleFactory {
   private:
     friend class QuadratureRules<ctype, dim>;
-    static unsigned maxOrder(const GeometryType &t, QuadratureType::Enum qt)
+    static unsigned maxOrder(const GeometryType &t, QuadratureType qt)
     {
       return TensorProductQuadratureRule<ctype,dim>::maxOrder(t.id(), qt);
     }
-    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType::Enum qt)
+    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType qt)
     {
       return TensorProductQuadratureRule<ctype,dim>(t.id(), p, qt);
     }
@@ -339,7 +337,7 @@ namespace Dune {
   private:
     enum { dim = 0 };
     friend class QuadratureRules<ctype, dim>;
-    static unsigned maxOrder(const GeometryType &t, QuadratureType::Enum)
+    static unsigned maxOrder(const GeometryType &t, [[maybe_unused]] QuadratureType qt)
     {
       if (t.isVertex())
       {
@@ -347,7 +345,7 @@ namespace Dune {
       }
       DUNE_THROW(Exception, "Unknown GeometryType");
     }
-    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int , QuadratureType::Enum)
+    static QuadratureRule<ctype, dim> rule(const GeometryType& t, [[maybe_unused]] int p, [[maybe_unused]] QuadratureType qt)
     {
       if (t.isVertex())
       {
@@ -362,7 +360,7 @@ namespace Dune {
   private:
     enum { dim = 1 };
     friend class QuadratureRules<ctype, dim>;
-    static unsigned maxOrder(const GeometryType &t, QuadratureType::Enum qt)
+    static unsigned maxOrder(const GeometryType &t, QuadratureType qt)
     {
       if (t.isLine())
       {
@@ -387,7 +385,7 @@ namespace Dune {
       }
       DUNE_THROW(Exception, "Unknown GeometryType");
     }
-    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType::Enum qt)
+    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType qt)
     {
       if (t.isLine())
       {
@@ -419,7 +417,7 @@ namespace Dune {
   private:
     enum { dim = 2 };
     friend class QuadratureRules<ctype, dim>;
-    static unsigned maxOrder(const GeometryType &t, QuadratureType::Enum qt)
+    static unsigned maxOrder(const GeometryType &t, QuadratureType qt)
     {
       unsigned order =
         TensorProductQuadratureRule<ctype,dim>::maxOrder(t.id(), qt);
@@ -428,7 +426,7 @@ namespace Dune {
           (order, unsigned(SimplexQuadratureRule<ctype,dim>::highest_order));
       return order;
     }
-    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType::Enum qt)
+    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType qt)
     {
       if (t.isSimplex()
         && ( qt == QuadratureType::GaussLegendre || qt == QuadratureType::GaussJacobi_n_0 )
@@ -445,7 +443,7 @@ namespace Dune {
   private:
     enum { dim = 3 };
     friend class QuadratureRules<ctype, dim>;
-    static unsigned maxOrder(const GeometryType &t, QuadratureType::Enum qt)
+    static unsigned maxOrder(const GeometryType &t, QuadratureType qt)
     {
       unsigned order =
         TensorProductQuadratureRule<ctype,dim>::maxOrder(t.id(), qt);
@@ -457,7 +455,7 @@ namespace Dune {
           (order, unsigned(PrismQuadratureRule<ctype,dim>::highest_order));
       return order;
     }
-    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType::Enum qt)
+    static QuadratureRule<ctype, dim> rule(const GeometryType& t, int p, QuadratureType qt)
     {
 
       if (t.isSimplex()
