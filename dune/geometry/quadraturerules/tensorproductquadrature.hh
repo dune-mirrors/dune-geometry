@@ -34,7 +34,7 @@ namespace Dune
 
     friend class QuadratureRuleFactory<ctype,dim>;
 
-    TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
+    TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType qt)
       : Base( GeometryType(topologyId, dim), order )
     {
       enum { bitSize = sizeof(unsigned int)*8 };
@@ -56,7 +56,7 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    void tensorProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
+    void tensorProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType qt)
     {
       typedef QuadratureRule<ctype,1> OneDQuadrature;
       const OneDQuadrature & onedQuad =
@@ -111,7 +111,7 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    void conicalProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
+    void conicalProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType qt)
     {
       typedef QuadratureRule<ctype,1> OneDQuadrature;
 
@@ -153,7 +153,7 @@ namespace Dune
       }
     }
 
-    static unsigned maxOrder(unsigned int topologyId, QuadratureType::Enum qt)
+    static unsigned maxOrder(unsigned int topologyId, QuadratureType qt)
     {
       enum { bitSize = sizeof(unsigned int)*8 };
       std::bitset<bitSize> baseId(topologyId);
