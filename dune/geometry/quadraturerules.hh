@@ -239,9 +239,9 @@ namespace Dune {
       static std::vector<std::pair< // indexed by quadrature type
         std::once_flag,
         GeometryTypeVector
-        > > quadratureCache(int(QuadratureType::size));
+        > > quadratureCache(static_cast<int>(QuadratureType::size));
 
-      auto & quadratureTypeLevel = quadratureCache[int(qt)];
+      auto & quadratureTypeLevel = quadratureCache[static_cast<int>(qt)];
       std::call_once(quadratureTypeLevel.first, initGeometryTypeVector,
                      &quadratureTypeLevel.second);
 
