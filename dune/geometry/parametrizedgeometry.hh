@@ -76,7 +76,8 @@ struct ParametrizedGeometryTraits
  *  ParametrizedGeometryTraits.
  */
 template <class LFE, int cdim,
-          class TraitsType = ParametrizedGeometryTraits<typename LFE::Traits::LocalBasisType::Traits::DomainFieldType>>
+          class TraitsType = ParametrizedGeometryTraits<
+            typename LFE::Traits::LocalBasisType::Traits::DomainFieldType>>
 class ParametrizedGeometry
 {
   using LocalFiniteElement = LFE;
@@ -108,9 +109,6 @@ public:
   /// type of jacobian inverse transposed
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
-  /// type of the extended Weingarten map
-  using NormalGradient = FieldMatrix<ctype, coorddimension, coorddimension>;
-
 public:
   /// type of reference element
   using ReferenceElements = Dune::ReferenceElements<ctype, mydimension>;
@@ -121,10 +119,9 @@ public:
 
 protected:
   using MatrixHelper = typename Traits::MatrixHelper;
-  static const bool hasSingleGeometryType
-    = Traits::template hasSingleGeometryType<mydimension>::v;
-  static const bool isFlatAffine
-    = hasSingleGeometryType && ((Traits::template hasSingleGeometryType<mydimension>::topologyId) >> 1 == 0);
+  static const bool singleGeoType = Traits::template hasSingleGeometryType<mydimension>::v;
+  static const bool isFlatAffine = singleGeoType
+    && ((Traits::template hasSingleGeometryType<mydimension>::topologyId) >> 1 == 0);
 
 public:
   /// \brief Constructor from a vector of coefficients of the LocalBasis parametrizing
@@ -153,22 +150,22 @@ public:
   /// \brief Constructor from a local parametrization function, mapping local to (curved)
   /// global coordinates
   /**
-   *  \param[in]  refElement  reference element for the geometry
-   *  \param[in]  localFE     Local finite-element to use for the parametrization
-   *  \param[in]  param       parametrization function with signature
-   *                          `GlobalCoordinate(LocalCoordinate)`
+   *  \param[in]  refElement      reference element for the geometry
+   *  \param[in]  localFE         Local finite-element to use for the parametrization
+   *  \param[in]  parametrization parametrization function with signature
+   *                              `GlobalCoordinate(LocalCoordinate)`
    *
    *  The parametrization function is not stored in the class, but interpolated into the local
    *  finite-element basis and the computed interpolation coefficients are stored.
    **/
   template <class Param,
-    std::enable_if_t<Std::is_callable<Param(LocalCoordinate),GlobalCoordinate>::value, bool> = true>
+    std::enable_if_t<std::is_invocable_r_v<GlobalCoordinate,Param,LocalCoordinate>, bool> = true>
   ParametrizedGeometry (const ReferenceElement& refElement, const LocalFiniteElement& localFE,
-                        Param&& param)
+                        Param&& parametrization)
     : refElement_(refElement)
     , localFE_(localFE)
   {
-    localFE_.localInterpolation().interpolate(param, vertices_);
+    localFE_.localInterpolation().interpolate(parametrization, vertices_);
   }
 
   /// \brief Constructor, forwarding to the other constructors that take a reference-element
@@ -282,7 +279,8 @@ public:
   {
     auto localCoord = checkedLocal(globalCoord);
     if (!localCoord)
-      DUNE_THROW(Exception, "Local coordinate cannot be recovered from given global coordinate " << globalCoord);
+      DUNE_THROW(Exception,
+        "Local coordinate cannot be recovered from given global coordinate " << globalCoord);
 
     return *localCoord;
   }
@@ -458,17 +456,17 @@ public:
     return vertices_;
   }
 
+  // the local basis of the stored local finite-element
+  const LocalBasis& localBasis () const
+  {
+    return localFE_.localBasis();
+  }
+
 protected:
   // the internal stored reference element
   const ReferenceElement& refElement () const
   {
     return refElement_;
-  }
-
-  // the local basis of the stored local finite-element
-  const LocalBasis& localBasis () const
-  {
-    return localFE_.localBasis();
   }
 
   // normal vector to an edge line-element
@@ -554,10 +552,6 @@ private:
   // some data optionally provided
   mutable std::optional<bool> affine_;
   mutable std::optional<FlatGeometry> flatGeometry_;
-  mutable std::vector<GlobalCoordinate> nCoefficients_;
-  mutable std::vector<GlobalCoordinate> nGradients_;
-  mutable std::vector<typename LocalBasisTraits::RangeType> nShapeValues_;
-  mutable std::vector<typename LocalBasisTraits::JacobianType> nShapeGradients_;
 };
 
 namespace Impl {
