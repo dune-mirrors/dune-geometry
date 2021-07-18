@@ -159,7 +159,8 @@ public:
   /// \brief Constructor from mapping to parametrize the geometry
   /**
    *  \param[in]  refElement     reference element for the geometry
-   *  \param[in]  mapping        mapping for the parametrization of the geometry (stored by value)
+   *  \param[in]  mapping        a differentiable local function for the parametrization of the
+   *                             geometry (stored by value)
    *  \param[in]  localGeometry  local geometry for local coordinate transformation
    **/
   template <class Map_, class LG_>
@@ -172,7 +173,8 @@ public:
   /// \brief Constructor, forwarding to the other constructor that take a reference-element
   /**
    *  \param[in]  gt             geometry type
-   *  \param[in]  mapping        mapping for the parametrization of the geometry (stored by value)
+   *  \param[in]  mapping        a differentiable local function for the parametrization of the
+   *                             geometry (stored by value)
    *  \param[in]  localGeometry  local geometry for local coordinate transformation
    **/
   template <class Map_, class LG_>
@@ -186,7 +188,8 @@ public:
   /// DefaultLocalGeometry.
   /**
    *  \param[in]  refGeo   geometry type or reference element
-   *  \param[in]  mapping  mapping for the parametrization of the geometry (stored by value)
+   *  \param[in]  mapping  a differentiable local function for the parametrization of the
+   *                       geometry (stored by value)
    **/
   template <class RefGeo, class Map_, class LG_ = LG,
     std::enable_if_t<std::is_same_v<LG_, DefaultLocalGeometry<ctype,mydimension>>, bool> = true>
