@@ -26,7 +26,5 @@ exclude_from_headercheck(
   simplexquadrature.hh
   tensorproductquadrature.hh")
 
-#build the library libquadraturerules
-target_sources(dunegeometry PRIVATE
-  quadraturerules.cc
-)
+# build the library libquadraturerules
+target_sources(dunegeometry PRIVATE quadraturerules.cc)
