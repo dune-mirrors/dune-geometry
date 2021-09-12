@@ -13,7 +13,7 @@ install(FILES
   tensorproductquadrature.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/geometry/quadraturerules)
 
-exclude_from_headercheck(
+dune_exclude_from_headercheck(
   "gausslobattoquadrature.hh
   gaussquadrature.hh
   gaussradauleftquadrature.hh
