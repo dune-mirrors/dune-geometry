@@ -11,7 +11,7 @@ endif()
 find_package(dune-common REQUIRED)
 
 # start a dune project with information from dune.module
-dune_project(dunegeometry)
+dune_project(dune-geometry)
 
 dune_add_library(dunegeometry)
 target_link_libraries(dunegeometry PUBLIC ${DUNE_LIBS})
