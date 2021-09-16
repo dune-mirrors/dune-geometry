@@ -4,7 +4,7 @@ add_python_targets(geometry
   quadpy
 )
 dune_add_pybind11_module(NAME _geometry)
-set_property(TARGET _geometry PROPERTY LINK_LIBRARIES dune-common dune-geometry APPEND)
+target_link_libraries(_geometry PUBLIC Dune::geometry)
 if(SKBUILD)
   install(TARGETS _geometry LIBRARY DESTINATION python/dune/geometry)
 endif()
