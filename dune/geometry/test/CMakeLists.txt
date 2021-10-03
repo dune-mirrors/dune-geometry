@@ -59,6 +59,7 @@ dune_add_test(SOURCES test-fromvertexcount.cc)
 dune_add_test(SOURCES test-referenceelements.cc)
 
 dune_add_test(SOURCES test-quadrature.cc)
+add_dune_blas_lapack_flags(test-quadrature)
 
 dune_add_test(SOURCES test-multilineargeometry.cc)
 
