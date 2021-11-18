@@ -18,10 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
 include(DuneMacros)
 
 # start a dune project with information from dune.module
-dune_project()
-
-dune_add_library(dunegeometry)
-target_link_libraries(dunegeometry PUBLIC ${DUNE_LIBS})
+dune_project(dunegeometry)
 
 add_subdirectory("dune")
 add_subdirectory("doc")
