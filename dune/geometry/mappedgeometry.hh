@@ -384,10 +384,8 @@ public:
    **/
   JacobianTransposed jacobianTransposed (const LocalCoordinate& local) const
   {
-    if (!dMapping_) {
+    if (!dMapping_)
       dMapping_.emplace(derivative(mapping()));
-      dMapping_->bind(mapping().localContext());
-    }
 
     // coordinate in the localContext of the mapping
     auto&& elementLocal = localGeometry().global(local);

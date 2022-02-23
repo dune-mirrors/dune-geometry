@@ -45,24 +45,9 @@ struct AffineMapping
   // bind the mapping to a local element
   void bind (const LocalContext&) {}
 
-
-  struct DerivativeAffineMapping
-  {
-    const LocalContext& localContext_;
-    const Dune::FieldMatrix<ctype,cdim,mydim>& A;
-
-    const auto& operator() (const Dune::FieldVector<ctype,mydim>& x) const
-    {
-      return A;
-    }
-
-    const LocalContext& localContext () const { return localContext_; }
-    void bind (const LocalContext&) {}
-  };
-
   friend auto derivative (const AffineMapping& mapping)
   {
-    return DerivativeAffineMapping{mapping.localContext_,mapping.A};
+    return [&A=mapping.A](const Dune::FieldVector<ctype,mydim>& x) { return A; };
   }
 
 private:
