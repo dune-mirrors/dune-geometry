@@ -54,10 +54,10 @@ struct MappedGeometryTraits
 
 /// \brief Geometry parametrized by a LocalFunction and a LocalGeometry
 /**
- * \tparam Geo  A geometry type defining the local coordinates of the geometry and its
- *              transformation into the domain of the mapping.
  * \tparam Map  Mapping of element coordinates to global coordinates, must be differentiable
  *              w.r.t. local coordinates
+ * \tparam Geo  A geometry type defining the local coordinates of the geometry and its
+ *              transformation into the domain of the mapping.
  * \tparam TraitsType  Parameters of the geometry, see \ref MappedGeometryTraits
  *
  * This class represents a geometry that is parametrized by the chained mapping of a geometry
@@ -71,7 +71,7 @@ struct MappedGeometryTraits
  *
  * The requirements on the traits are documented along with their default, `MappedGeometryTraits`.
  **/
-template <class Geo, class Map,
+template <class Map, class Geo,
           class TraitsType = MappedGeometryTraits<typename Geo::ctype>>
 class MappedGeometry
 {
@@ -100,7 +100,7 @@ public:
   /// type of jacobian inverse transposed
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
-public:
+private:
   /// type of reference element
   using ReferenceElements = Dune::ReferenceElements<ctype, mydimension>;
   using ReferenceElement = typename ReferenceElements::ReferenceElement;
@@ -127,15 +127,15 @@ protected:
 public:
   /// \brief Constructor from mapping to parametrize the geometry
   /**
-   *  \param[in]  geometry  The geometry that is mapped
    *  \param[in]  mapping   A differentiable function for the parametrization of the geometry
+   *  \param[in]  geometry  The geometry that is mapped
    **/
   template <class Geo_, class Map_,
-    std::enable_if_t<Dune::IsInteroperable<Geo, Geo_>::value, int> = 0,
-    std::enable_if_t<Dune::IsInteroperable<Map, Map_>::value, int> = 0>
-  MappedGeometry (Geo_&& geometry, Map_&& mapping)
-    : geometry_(std::forward<Geo_>(geometry))
-    , mapping_(std::forward<Map_>(mapping))
+    std::enable_if_t<Dune::IsInteroperable<Map, Map_>::value, int> = 0,
+    std::enable_if_t<Dune::IsInteroperable<Geo, Geo_>::value, int> = 0>
+  MappedGeometry (Map_&& mapping, Geo_&& geometry)
+    : mapping_(std::forward<Map_>(mapping))
+    , geometry_(std::forward<Geo_>(geometry))
   {}
 
   /// \brief Is this mapping affine? Not in general, since we don't know anything about the mapping.
@@ -460,11 +460,11 @@ private:
   }
 
 private:
-  /// The geometry that is wrapped
-  Geometry geometry_;
-
   /// Parametrization of the element
   Mapping mapping_;
+
+  /// The geometry that is wrapped
+  Geometry geometry_;
 
   // some data optionally provided
   mutable std::optional<DerivativeMapping> dMapping_;
@@ -472,9 +472,9 @@ private:
 };
 
 // deduction guides
-template <class Geo, class Map>
-MappedGeometry (const Geo&, const Map&)
-  -> MappedGeometry<Geo,Map>;
+template <class Map, class Geo>
+MappedGeometry (const Map&, const Geo&)
+  -> MappedGeometry<Map,Geo>;
 
 } // end namespace Dune
 

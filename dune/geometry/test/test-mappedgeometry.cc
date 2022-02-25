@@ -66,7 +66,7 @@ static bool testMappedGeometry (Timings& timings)
   // Transform using a MultiLinearGeometry
   auto start1 = std::chrono::high_resolution_clock::now();
   auto geo = Dune::MultiLinearGeometry<ctype,gt.dim(),gt.dim()>{refElem, corners};
-  auto geometry1 = Dune::MappedGeometry{geo, mapping};
+  auto geometry1 = Dune::MappedGeometry{mapping, geo};
   pass &= checkGeometry(geometry1);
   auto end1 = std::chrono::high_resolution_clock::now();
   auto elapsed_seconds1 = std::chrono::duration_cast<std::chrono::duration<double>>(end1 - start1);
@@ -75,7 +75,7 @@ static bool testMappedGeometry (Timings& timings)
   // Transform using the geometry of a reference element
   auto start2 = std::chrono::high_resolution_clock::now();
   auto refGeo = refElem.template geometry<0>(0);
-  auto geometry2 = Dune::MappedGeometry{refGeo, mapping};
+  auto geometry2 = Dune::MappedGeometry{mapping, refGeo};
   pass &= checkGeometry(geometry2);
   auto end2 = std::chrono::high_resolution_clock::now();
   auto elapsed_seconds2 = std::chrono::duration_cast<std::chrono::duration<double>>(end2 - start2);
@@ -84,7 +84,7 @@ static bool testMappedGeometry (Timings& timings)
   // Transform using the ReferenceElementGeometry wrapper
   auto start3 = std::chrono::high_resolution_clock::now();
   auto refElemWrapper = Dune::ReferenceElementGeometry{refElem};
-  auto geometry3 = Dune::MappedGeometry{refElemWrapper, mapping};
+  auto geometry3 = Dune::MappedGeometry{mapping, refElemWrapper};
   pass &= checkGeometry(geometry3);
   auto end3 = std::chrono::high_resolution_clock::now();
   auto elapsed_seconds3 = std::chrono::duration_cast<std::chrono::duration<double>>(end3 - start3);
@@ -93,7 +93,7 @@ static bool testMappedGeometry (Timings& timings)
   // Transform using the LocalJacobianGeometry wrapper
   auto start4 = std::chrono::high_resolution_clock::now();
   auto jacobianTransform = Dune::LocalDerivativeGeometry{geometry1};
-  auto geometry4 = Dune::MappedGeometry{jacobianTransform, mapping};
+  auto geometry4 = Dune::MappedGeometry{mapping, jacobianTransform};
   pass &= checkGeometry(geometry4);
   auto end4 = std::chrono::high_resolution_clock::now();
   auto elapsed_seconds4 = std::chrono::duration_cast<std::chrono::duration<double>>(end4 - start4);
