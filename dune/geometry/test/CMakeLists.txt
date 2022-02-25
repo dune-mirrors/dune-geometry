@@ -53,6 +53,10 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND
       "compiler/optimization combination")
   endif()
 endif()
+
+dune_add_test(SOURCES test-chainedgeometry.cc
+              LINK_LIBRARIES dunegeometry)
+
 dune_add_test(SOURCES test-cornerstoragerefwrap.cc
               LINK_LIBRARIES dunegeometry
               CMAKE_GUARD ISSUE19_UNAFFECTED_GXX)

@@ -6,12 +6,14 @@ add_subdirectory("test")
 install(FILES
   affinegeometry.hh
   axisalignedcubegeometry.hh
+  chainedgeometry.hh
   dimension.hh
   generalvertexorder.hh
   mappedgeometry.hh
   multilineargeometry.hh
   quadraturerules.hh
   referenceelement.hh
+  referenceelementgeometry.hh
   referenceelementimplementation.hh
   referenceelements.hh
   refinement.hh
