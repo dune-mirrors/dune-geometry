@@ -21,7 +21,7 @@ ubuntu-20.04-clang-10-20-nobindings:
   variables:
     DUNECI_INSTALL_STAGE: '1'
     DUNECI_TOOLCHAIN: clang-10-20
-    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=ON'
+    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DCMAKE_INSTALL_PREFIX=/duneci/install/'
   tags: [duneci]
 
 # no numpy version available for this image on the gitlab registry
@@ -33,7 +33,7 @@ ubuntu:18.04 clang-6-17:
   variables:
     DUNECI_INSTALL_STAGE: '1'
     DUNECI_TOOLCHAIN: clang-6-17
-    DUNECI_CMAKE_FLAGS: "-DDUNE_ENABLE_PYTHONBINDINGS=OFF"
+    DUNECI_CMAKE_FLAGS: "-DDUNE_ENABLE_PYTHONBINDINGS=OFF -DCMAKE_INSTALL_PREFIX=/duneci/install/"
   tags: [duneci]
 ubuntu:18.04 clang-5-17:
   image: registry.dune-project.org/docker/ci/ubuntu:18.04
@@ -42,7 +42,7 @@ ubuntu:18.04 clang-5-17:
   variables:
     DUNECI_INSTALL_STAGE: '1'
     DUNECI_TOOLCHAIN: clang-5-17
-    DUNECI_CMAKE_FLAGS: "-DDUNE_ENABLE_PYTHONBINDINGS=OFF"
+    DUNECI_CMAKE_FLAGS: "-DDUNE_ENABLE_PYTHONBINDINGS=OFF -DCMAKE_INSTALL_PREFIX=/duneci/install/"
   tags: [duneci]
 
 # Check for spelling mistakes in text
