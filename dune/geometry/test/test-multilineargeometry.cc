@@ -27,6 +27,37 @@ struct ReferenceWrapperGeometryTraits :
   };
 };
 
+template<class ct>
+struct RawPointerGeometryTraits :
+  public Dune::MultiLinearGeometryTraits<ct>
+{
+  template< int mydim, int cdim >
+  struct CornerStorage
+  {
+    using Type = const std::vector< Dune::FieldVector< ct, cdim > >*;
+  };
+};
+
+template<class ct, class RawCorners>
+static auto asCornerStorage(Dune::MultiLinearGeometryTraits<ct>, const RawCorners& corners)
+{
+  return corners;
+}
+
+template<class ct, class RawCorners>
+static auto asCornerStorage(ReferenceWrapperGeometryTraits<ct>, const RawCorners& corners)
+{
+  return std::cref(corners);
+}
+
+template<class ct, class RawCorners>
+static auto asCornerStorage(RawPointerGeometryTraits<ct>, const RawCorners& corners)
+{
+  return &corners;
+}
+
+
+
 template< class ctype, int mydim, int cdim >
 static Dune::FieldVector< ctype, cdim >
 map ( const Dune::FieldMatrix< ctype, mydim, mydim > &A,
@@ -155,7 +186,14 @@ static bool testMultiLinearGeometry ( typename Dune::ReferenceElements< ctype, m
   for( int i = 0; i < numCorners; ++i )
     corners[ i ] = map( A, B, refElement.position( i, mydim ) );
 
-  Geometry geometry( refElement, corners );
+  Geometry geometry( refElement, asCornerStorage(Traits(), corners) );
+
+  using CornerStorage = typename Traits::CornerStorage<mydim, cdim>::Type;
+  if constexpr(std::is_default_constructible_v<CornerStorage>)
+  {
+    Geometry geometry2;
+    geometry2 = geometry;
+  }
 
   if( !geometry.affine() )
   {
@@ -302,7 +340,7 @@ static bool testNonLinearGeometry(const Traits & /* traits */)
                                  {0,1},
                                  {1,1}};
 
-  const Geometry geometry(reference, corners);
+  const Geometry geometry(reference, asCornerStorage(Traits(), corners));
 
   /* Test global() */
   for (std::size_t c = 0; c < corners.size(); ++c) {
@@ -459,6 +497,11 @@ int main ( int /* argc */, char ** /* argv */)
             << "storage" << std::endl;
   pass &= testMultiLinearGeometry< double >
     ( ReferenceWrapperGeometryTraits< double >{} );
+
+  std::cout << ">>> Checking ctype = double with raw pointer corner "
+            << "storage" << std::endl;
+  pass &= testMultiLinearGeometry< double >
+    ( RawPointerGeometryTraits< double >{} );
 
   // std::cout << ">>> Checking ctype = float" << std::endl;
   // pass &= testMultiLinearGeometry< float >

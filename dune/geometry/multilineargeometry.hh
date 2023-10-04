@@ -14,6 +14,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/referencehelper.hh>
 
 #include <dune/geometry/affinegeometry.hh>
 #include <dune/geometry/referenceelements.hh>
@@ -226,6 +227,9 @@ namespace Dune
     typedef typename std::conditional< hasSingleGeometryType, std::integral_constant< unsigned int, Traits::template hasSingleGeometryType< mydimension >::topologyId >, unsigned int >::type TopologyId;
 
   public:
+
+    MultiLinearGeometry() = default;
+
     /** \brief constructor
      *
      *  \param[in]  refElement  reference element for the geometry
@@ -275,7 +279,8 @@ namespace Dune
     GlobalCoordinate corner ( int i ) const
     {
       assert( (i >= 0) && (i < corners()) );
-      return std::cref(corners_).get()[ i ];
+//      return std::cref(corners_).get()[ i ];
+      return Dune::resolvePtrOrRef(corners_)[ i ];
     }
 
     /** \brief obtain the centroid of the mapping's image */
@@ -291,7 +296,8 @@ namespace Dune
     {
       using std::begin;
 
-      auto cit = begin(std::cref(corners_).get());
+//      auto cit = begin(std::cref(corners_).get());
+      auto cit = begin(Dune::resolvePtrOrRef(corners_));
       GlobalCoordinate y;
       global< false >( topologyId(), std::integral_constant< int, mydimension >(), cit, ctype( 1 ), local, ctype( 1 ), y );
       return y;
@@ -379,7 +385,8 @@ namespace Dune
       using std::begin;
 
       JacobianTransposed jt;
-      auto cit = begin(std::cref(corners_).get());
+//      auto cit = begin(std::cref(corners_).get());
+      auto cit = begin(Dune::resolvePtrOrRef(corners_));
       jacobianTransposed< false >( topologyId(), std::integral_constant< int, mydimension >(), cit, ctype( 1 ), local, ctype( 1 ), jt );
       return jt;
     }
@@ -459,7 +466,8 @@ namespace Dune
     {
       using std::begin;
 
-      auto cit = begin(std::cref(corners_).get());
+//      auto cit = begin(std::cref(corners_).get());
+      auto cit = begin(Dune::resolvePtrOrRef(corners_));
       return affine( topologyId(), std::integral_constant< int, mydimension >(), cit, jacobianT );
     }
 
