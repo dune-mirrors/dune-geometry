@@ -188,7 +188,7 @@ static bool testMultiLinearGeometry ( typename Dune::ReferenceElements< ctype, m
 
   Geometry geometry( refElement, asCornerStorage(Traits(), corners) );
 
-  using CornerStorage = typename Traits::CornerStorage<mydim, cdim>::Type;
+  using CornerStorage = typename Traits::template CornerStorage<mydim, cdim>::Type;
   if constexpr(std::is_default_constructible_v<CornerStorage>)
   {
     Geometry geometry2;
