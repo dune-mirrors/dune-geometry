@@ -9,6 +9,7 @@ add_subdirectory("test")
 install(FILES
   affinegeometry.hh
   axisalignedcubegeometry.hh
+  chainedgeometry.hh
   dimension.hh
   generalvertexorder.hh
   multilineargeometry.hh

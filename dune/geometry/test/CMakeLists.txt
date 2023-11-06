@@ -7,6 +7,9 @@ dune_add_test(SOURCES test-affinegeometry.cc
 dune_add_test(SOURCES test-axisalignedcubegeometry.cc
               LINK_LIBRARIES dunegeometry)
 
+dune_add_test(SOURCES test-chainedgeometry.cc
+              LINK_LIBRARIES dunegeometry)
+
 dune_add_test(SOURCES test-cornerstoragerefwrap.cc
               LINK_LIBRARIES dunegeometry)
 
