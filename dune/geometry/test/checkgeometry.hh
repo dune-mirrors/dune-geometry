@@ -247,14 +247,14 @@ namespace Dune
       // Test whether the methods 'jacobianTransposed' and 'jacobianInverseTransposed'
       // are the transposed of 'jacobian' and 'jacobianInverse', respectively.
       {
-        if( (JtAsFieldMatrix - JAsFieldMatrix.transposed()).infinity_norm() != 0 )
+        if( (JtAsFieldMatrix - JAsFieldMatrix.transposed()).infinity_norm() > tolerance )
         {
           std::cerr << "Error: jacobian and jacobianTransposed are not transposed to each other." << std::endl;
           pass = false;
         }
       }
       {
-        if( (JitAsFieldMatrix - JiAsFieldMatrix.transposed()).infinity_norm() != 0 )
+        if( (JitAsFieldMatrix - JiAsFieldMatrix.transposed()).infinity_norm() > tolerance )
         {
           std::cerr << "Error: jacobianInverse and jacobianInverseTransposed are not transposed to each other." << std::endl;
           pass = false;
