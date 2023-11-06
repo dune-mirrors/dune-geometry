@@ -18,6 +18,7 @@
 #include <dune/geometry/affinegeometry.hh>
 #include <dune/geometry/referenceelements.hh>
 #include <dune/geometry/type.hh>
+#include <dune/geometry/utility/defaultgeometrytraits.hh>
 
 namespace Dune
 {
@@ -36,30 +37,8 @@ namespace Dune
    */
   template< class ct >
   struct MultiLinearGeometryTraits
+      : public DefaultGeometryTraits<ct>
   {
-    /** \brief helper structure containing some matrix routines
-     *
-     *  This helper allows exchanging the matrix inversion algorithms.
-     *  It must provide the following static methods:
-     *  \code
-     *  template< int m, int n >
-     *  static ctype sqrtDetAAT ( const FieldMatrix< ctype, m, n > &A );
-     *
-     *  template< int m, int n >
-     *  static ctype rightInvA ( const FieldMatrix< ctype, m, n > &A,
-     *                           FieldMatrix< ctype, n, m > &ret );
-     *
-     *  template< int m, int n >
-     *  static void xTRightInvA ( const FieldMatrix< ctype, m, n > &A,
-     *                            const FieldVector< ctype, n > &x,
-     *                            FieldVector< ctype, m > &y );
-     *  \endcode
-     */
-    typedef Impl::FieldMatrixHelper< ct > MatrixHelper;
-
-    /** \brief tolerance to numerical algorithms */
-    static ct tolerance () { return ct( 16 ) * std::numeric_limits< ct >::epsilon(); }
-
     /** \brief template specifying the storage for the corners
      *
      *  Internally, the MultiLinearGeometry needs to store the corners of the
@@ -128,26 +107,6 @@ namespace Dune
     struct CornerStorage
     {
       typedef std::vector< FieldVector< ct, cdim > > Type;
-    };
-
-    /** \brief will there be only one geometry type for a dimension?
-     *
-     *  If there is only a single geometry type for a certain dimension,
-     *  <em>hasSingleGeometryType::v</em> can be set to true.
-     *  Supporting only one geometry type might yield a gain in performance.
-     *
-     *  If <em>hasSingleGeometryType::v</em> is set to true, an additional
-     *  parameter <em>topologyId</em> is required.
-     *  Here's an example:
-     *  \code
-     *  static const unsigned int topologyId = GeometryTypes::simplex(dim).id();
-     *  \endcode
-     */
-    template< int dim >
-    struct hasSingleGeometryType
-    {
-      static const bool v = false;
-      static const unsigned int topologyId = ~0u;
     };
   };
 
