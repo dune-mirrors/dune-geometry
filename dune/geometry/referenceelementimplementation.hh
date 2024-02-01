@@ -26,6 +26,12 @@
 #include <dune/geometry/affinegeometry.hh>
 #include <dune/geometry/type.hh>
 
+// save diagnostic state
+#pragma GCC diagnostic push
+// turn off the specific warning, caused by code in line 261.
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
+
 namespace Dune
 {
 
@@ -816,5 +822,8 @@ namespace Dune
   } // namespace Geo
 
 } // namespace Dune
+
+// turn the warnings back on
+#pragma GCC diagnostic pop
 
 #endif // #ifndef DUNE_GEOMETRY_REFERENCEELEMENTIMPLEMENTATION_HH
