@@ -20,7 +20,7 @@
 #include <dune/geometry/quadraturerules.hh>
 #include <dune/geometry/referenceelements.hh>
 #include <dune/geometry/type.hh>
-#include <dune/geometry/utility/defaultgeometrytraits.hh>
+#include <dune/geometry/utility/convergenceoptions.hh>
 
 namespace Dune {
 
@@ -30,8 +30,7 @@ namespace Dune {
  * \tparam InnerGeo  The geometry mapping `g`
  *
  **/
-template <class OuterGeo, class InnerGeo,
-          class TraitsType = DefaultGeometryTraits<typename OuterGeo::ctype>>
+template <class OuterGeo, class InnerGeo>
 class ChainedGeometry
 {
 public:
@@ -66,10 +65,8 @@ public:
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
 private:
-  using Traits = TraitsType;
-
   /// \brief helper structure containing some matrix routines. See affinegeometry.hh
-  using MatrixHelper = typename Traits::MatrixHelper;
+  using MatrixHelper = Impl::FieldMatrixHelper<ctype>;
 
 public:
   /// \brief Constructor a chained geometry mapping `f o g`
@@ -163,18 +160,19 @@ public:
   /**
    * Calculates the volume of the entity by numerical integration. Since the polynomial order of the
    * Volume element is not known, iteratively compute numerical integrals with increasing order
-   * of the quadrature rules, until tolerance is reached.
+   * of the quadrature rules, until a tolerance is reached or the maximum number of iterations
+   * is exceeded. The convergence properties are given in the convergence options argument.
    **/
-  Volume volume () const
+  Volume volume (Impl::ConvergenceOptions<ctype> opts = {}) const
   {
     Volume vol0 = volume(QuadratureRules<ctype, mydimension>::rule(type(), 1));
     if (affine())
       return vol0;
 
     using std::abs;
-    for (int p = 2; p < Traits::maxIteration(); ++p) {
+    for (int p = 2; p < opts.maxIt; ++p) {
       Volume vol1 = volume(QuadratureRules<ctype, mydimension>::rule(type(), p));
-      if (abs(vol1 - vol0) < Traits::tolerance())
+      if (abs(vol1 - vol0) < opts.absTol)
         return vol1;
 
       vol0 = vol1;
@@ -182,7 +180,7 @@ public:
     return vol0;
   }
 
-  /// \brief Obtain the volume of the mapping's image by given quadrature rules
+  /// \brief Obtain the volume of the mapping's image by given quadrature rule
   Volume volume (const QuadratureRule<ctype, mydimension>& quadRule) const
   {
     Volume vol(0);
@@ -210,9 +208,7 @@ public:
    **/
   JacobianTransposed jacobianTransposed (const LocalCoordinate& local) const
   {
-    auto&& jtInner = innerGeo_.jacobianTransposed(local);
-    auto&& jtOuter = outerGeo_.jacobianTransposed(innerGeo_.global(local));
-    return jtInner * jtOuter;
+    return jacobian(local).transposed();
   }
 
   /// \brief obtain the Jacobian's inverse
@@ -224,7 +220,7 @@ public:
   JacobianInverse jacobianInverse (const LocalCoordinate& local) const
   {
     JacobianInverse out;
-    MatrixHelper::rightInvA(jacobian(local), out);
+    MatrixHelper::leftInvA(jacobian(local), out);
     return out;
   }
 
@@ -236,9 +232,7 @@ public:
    **/
   JacobianInverseTransposed jacobianInverseTransposed (const LocalCoordinate& local) const
   {
-    JacobianInverseTransposed out;
-    MatrixHelper::rightInvA(jacobianTransposed(local), out);
-    return out;
+    return jacobianInverse(local).transposed();
   }
 
   /// \brief obtain the reference-element related to this geometry
