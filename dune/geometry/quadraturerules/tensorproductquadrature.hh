@@ -35,6 +35,7 @@ namespace Dune
 
     friend class QuadratureRuleFactory<ctype,dim>;
 
+  public:
     TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
       : TensorProductQuadratureRule(
           GeometryType(topologyId, dim),
