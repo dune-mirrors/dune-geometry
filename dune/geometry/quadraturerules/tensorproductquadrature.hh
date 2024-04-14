@@ -32,23 +32,25 @@ namespace Dune
     typedef QuadratureRule<ctype, dim> Base;
     typedef QuadraturePoint<ctype, dim> QPoint;
     typedef typename QPoint::Vector Vector;
-    typedef QuadratureRule<ctype,dim-1> BaseQuadrature;
 
     friend class QuadratureRuleFactory<ctype,dim>;
 
     TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
-      : Base( GeometryType(topologyId, dim), order )
+      : TensorProductQuadratureRule(
+          GeometryType(topologyId, dim),
+          QuadratureRules<ctype,dim-1>::rule(
+            GeometryTypes::base(GeometryType(topologyId, dim)), order, qt),
+          QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt) )
+    {}
+
+    template <class BaseQuad, class OneDQuad>
+    TensorProductQuadratureRule (const GeometryType& baseType, const BaseQuad& baseQuad, const OneDQuad& onedQuad)
+      : Base( baseType, std::min(baseQuad.order(), onedQuad.order()) )
     {
-      constexpr static int bitSize = sizeof(unsigned int)*8;
-      std::bitset<bitSize> baseId(topologyId);
-      bool isPrism = baseId[dim-1];
-      baseId.reset(dim-1);
-      GeometryType baseType(baseId.to_ulong(), dim-1);
-      const BaseQuadrature & baseQuad = QuadratureRules<ctype,dim-1>::rule(baseType, order, qt);
-      if (isPrism)
-        tensorProduct(baseQuad, order, qt);
+      if (baseType.isPrism())
+        tensorProduct(baseQuad, onedQuad);
       else
-        conicalProduct(baseQuad, order, qt);
+        conicalProduct(baseQuad, onedQuad);
     }
 
     /**
@@ -58,18 +60,21 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    void tensorProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
+    template <class BaseQuad>
+    void tensorProduct(const BaseQuad& baseQuad, unsigned int order, QuadratureType::Enum qt)
     {
-      typedef QuadratureRule<ctype,1> OneDQuadrature;
-      const OneDQuadrature & onedQuad =
-        QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt);
+      const auto& onedQuad = QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt);
+      tensorProdut(baseQuad, onedQuad);
+    }
 
+    template <class BaseQuad, class OneDQuad>
+    void tensorProduct(const BaseQuad& baseQuad, const OneDQuad& onedQuad)
+    {
       const unsigned int baseQuadSize = baseQuad.size();
       for( unsigned int bqi = 0; bqi < baseQuadSize; ++bqi )
       {
-        const typename QuadraturePoint<ctype, dim-1>::Vector &
-        basePoint = baseQuad[bqi].position( );
-        const ctype &baseWeight = baseQuad[bqi].weight( );
+        const auto& basePoint = baseQuad[bqi].position( );
+        const auto& baseWeight = baseQuad[bqi].weight( );
 
         Vector point;
         for( unsigned int i = 0; i < dim-1; ++i )
@@ -83,6 +88,8 @@ namespace Dune
         }
       }
     }
+
+
 
     /** \brief Creates quadrature rule by conical multiplication of an arbitrary rule with a rule for a one-dimensional domain
      *
@@ -113,7 +120,8 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    void conicalProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
+    template <class BaseQuad>
+    void conicalProduct(const BaseQuad& baseQuad, unsigned int order, QuadratureType::Enum qt)
     {
       typedef QuadratureRule<ctype,1> OneDQuadrature;
 
@@ -127,12 +135,18 @@ namespace Dune
         respectWeightFunction = true;
       }
 
+      conicalProduct(baseQuad, onedQuad, respectWeightFunction);
+    }
+
+    template <class BaseQuad, class OneDQuad>
+    void conicalProduct(const BaseQuad& baseQuad, const OneDQuad& onedQuad,
+                        bool respectWeightFunction = false)
+    {
       const unsigned int baseQuadSize = baseQuad.size();
       for( unsigned int bqi = 0; bqi < baseQuadSize; ++bqi )
       {
-        const typename QuadraturePoint<ctype, dim-1>::Vector &
-        basePoint = baseQuad[bqi].position( );
-        const ctype &baseWeight = baseQuad[bqi].weight( );
+        const auto& basePoint = baseQuad[bqi].position( );
+        const auto& baseWeight = baseQuad[bqi].weight( );
 
         const unsigned int onedQuadSize = onedQuad.size();
         for( unsigned int oqi = 0; oqi < onedQuadSize; ++oqi )
