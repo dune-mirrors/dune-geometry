@@ -473,6 +473,12 @@ namespace Dune
       return GeometryType(0,dim,true);
     }
 
+    /** \brief Removes the bit for the highest dimension and returns the lower-dimensional GeometryType */
+    inline constexpr GeometryType base(const GeometryType& gt)
+    {
+      return GeometryType(gt.id() & ((1 << (gt.dim()-1))-1), gt.dim()-1, gt.isNone());
+    }
+
     /** \brief Return GeometryType of a conical construction with gt as base  */
     inline constexpr GeometryType conicalExtension(const GeometryType& gt)
     {
@@ -483,6 +489,14 @@ namespace Dune
     inline constexpr GeometryType prismaticExtension(const GeometryType& gt)
     {
       return GeometryType(gt.id() | ((1 << gt.dim())), gt.dim()+1, gt.isNone());
+    }
+
+    /** \brief Return GeometryType of a prismatic construction with gt as base  */
+    inline constexpr GeometryType prismaticProduct(const GeometryType& lhs, const GeometryType& rhs)
+    {
+      return rhs.dim() == 0 ? lhs :
+             rhs.dim() == 1 ? prismaticExtension(lhs) :
+                              prismaticProduct(prismaticExtension(lhs), base(rhs));
     }
 
     //! GeometryType representing a vertex.
