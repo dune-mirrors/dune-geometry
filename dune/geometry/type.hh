@@ -485,18 +485,36 @@ namespace Dune
       return GeometryType(gt.id(), gt.dim()+1, gt.isNone());
     }
 
+    /** \brief Return GeometryType of a conicaöl construction with lhs as base  */
+    inline constexpr GeometryType conicalProduct(const GeometryType& lhs, const GeometryType& rhs)
+    {
+      if (rhs.dim() == 0)
+        return lhs;
+      else if (rhs.dim() == 1)
+        return conicalExtension(lhs);
+      else {
+        assert(conicalExtension(base(rhs)) == rhs);
+        return conicalProduct(conicalExtension(lhs), base(rhs));
+      }
+    }
+
     /** \brief Return GeometryType of a prismatic construction with gt as base  */
     inline constexpr GeometryType prismaticExtension(const GeometryType& gt)
     {
       return GeometryType(gt.id() | ((1 << gt.dim())), gt.dim()+1, gt.isNone());
     }
 
-    /** \brief Return GeometryType of a prismatic construction with gt as base  */
+    /** \brief Return GeometryType of a prismatic construction with lhs as base  */
     inline constexpr GeometryType prismaticProduct(const GeometryType& lhs, const GeometryType& rhs)
     {
-      return rhs.dim() == 0 ? lhs :
-             rhs.dim() == 1 ? prismaticExtension(lhs) :
-                              prismaticProduct(prismaticExtension(lhs), base(rhs));
+      if (rhs.dim() == 0)
+        return lhs;
+      else if (rhs.dim() == 1)
+        return prismaticExtension(lhs);
+      else {
+        assert(prismaticExtension(base(rhs)) == rhs);
+        return prismaticProduct(prismaticExtension(lhs), base(rhs));
+      }
     }
 
     //! GeometryType representing a vertex.
