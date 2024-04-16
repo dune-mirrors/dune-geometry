@@ -48,12 +48,15 @@ namespace Dune
      * \param qt           Type of the quadrature formula to use for all dimensions.
      **/
     TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
-      : TensorProductQuadratureRule(
-          GeometryType(topologyId, dim),
-          QuadratureRules<ctype,dim-1>::rule(
-            GeometryTypes::base(GeometryType(topologyId, dim)), order, qt),
-          QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt) )
-    {}
+      : Base( GeometryType(topologyId, dim), order )
+    {
+      auto baseType = GeometryTypes::base(this->type());
+      auto& baseQuad = QuadratureRules<ctype,dim-1>::rule(baseType, order, qt);
+      if (this->type().isPrismatic())
+        tensorProduct(baseQuad, order, qt);
+      else
+        conicalProduct(baseQuad, order, qt);
+    }
 
 
     /**
@@ -77,8 +80,10 @@ namespace Dune
       // fill the quadrature points
       if (type.isPrismatic())
         tensorProduct(baseQuad, onedQuad);
-      else
+      else {
+        this->delivered_order = std::min(baseQuad.order(), onedQuad.order()-dim+1)
         conicalProduct(baseQuad, onedQuad);
+      }
     }
 
     /**
@@ -92,7 +97,7 @@ namespace Dune
     void tensorProduct(const BaseQuad& baseQuad, unsigned int order, QuadratureType::Enum qt)
     {
       const auto& onedQuad = QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt);
-      tensorProdut(baseQuad, onedQuad);
+      tensorProduct(baseQuad, onedQuad);
     }
 
     template <class BaseQuad, class OneDQuad>
