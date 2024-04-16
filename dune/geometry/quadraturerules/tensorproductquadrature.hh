@@ -36,6 +36,17 @@ namespace Dune
     friend class QuadratureRuleFactory<ctype,dim>;
 
   public:
+
+    /**
+     * \brief Build a tensor-product quadrature rule with equal order in all dimensions.
+     *
+     * This tensor product rule for the geometry of type `GeometryType(topologyId,dim)`
+     * is build with equal order for the base geometry and the 1d-extension geometry.
+     *
+     * \param topologyId   The topology Id of the target geometry.
+     * \param order        Polynomial order of the sub quadratures rules in base and 1d.
+     * \param qt           Type of the quadrature formula to use for all dimensions.
+     **/
     TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
       : TensorProductQuadratureRule(
           GeometryType(topologyId, dim),
@@ -44,11 +55,27 @@ namespace Dune
           QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt) )
     {}
 
+
+    /**
+     * \brief Build a tensor-product quadrature rule as the product of tqo given rules.
+     *
+     * This tensor product rule for the geometry of type `GeometryType(topologyId,dim)`
+     * is build by combining a given rule for the base geometry and the 1d geometry.
+     *
+     * \param type      The geometry type of the target geometry.
+     * \param baseQuad  Quadrature rule for the base geometry.
+     * \param onedQuad  Quadrature rule for the 1d geometry.
+     **/
     template <class BaseQuad, class OneDQuad>
-    TensorProductQuadratureRule (const GeometryType& baseType, const BaseQuad& baseQuad, const OneDQuad& onedQuad)
-      : Base( baseType, std::min(baseQuad.order(), onedQuad.order()) )
+    TensorProductQuadratureRule (const GeometryType& type, const BaseQuad& baseQuad, const OneDQuad& onedQuad)
+      : Base( type, std::min(baseQuad.order(), onedQuad.order()) )
     {
-      if (baseType.isPrism())
+      assert(type.dim() == dim);
+      static_assert(BaseQuad::d == dim-1);
+      static_assert(OneDQuad::d == 1);
+
+      // fill the quadrature points
+      if (type.isPrismatic())
         tensorProduct(baseQuad, onedQuad);
       else
         conicalProduct(baseQuad, onedQuad);

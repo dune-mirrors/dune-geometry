@@ -493,7 +493,7 @@ namespace Dune
       else if (rhs.dim() == 1)
         return conicalExtension(lhs);
       else {
-        assert(conicalExtension(base(rhs)) == rhs);
+        assert(rhs.isConical());
         return conicalProduct(conicalExtension(lhs), base(rhs));
       }
     }
@@ -512,7 +512,7 @@ namespace Dune
       else if (rhs.dim() == 1)
         return prismaticExtension(lhs);
       else {
-        assert(prismaticExtension(base(rhs)) == rhs);
+        assert(rhs.isPrismatic());
         return prismaticProduct(prismaticExtension(lhs), base(rhs));
       }
     }
