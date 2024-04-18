@@ -81,7 +81,7 @@ namespace Dune
       if (type.isPrismatic())
         tensorProduct(baseQuad, onedQuad);
       else {
-        this->delivered_order = std::min(baseQuad.order(), onedQuad.order()-dim+1)
+        this->delivered_order = std::min(baseQuad.order(), onedQuad.order()-dim+1);
         conicalProduct(baseQuad, onedQuad);
       }
     }
