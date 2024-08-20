@@ -60,7 +60,7 @@ namespace Dune
 
 
     /**
-     * \brief Build a tensor-product quadrature rule as the product of tqo given rules.
+     * \brief Build a tensor-product quadrature rule as the product of two given rules.
      *
      * This tensor product rule for the geometry of type `GeometryType(topologyId,dim)`
      * is build by combining a given rule for the base geometry and the 1d geometry.

@@ -485,7 +485,7 @@ namespace Dune
       return GeometryType(gt.id(), gt.dim()+1, gt.isNone());
     }
 
-    /** \brief Return GeometryType of a conicaöl construction with lhs as base  */
+    /** \brief Return GeometryType of a conical construction with lhs as base  */
     inline constexpr GeometryType conicalProduct(const GeometryType& lhs, const GeometryType& rhs)
     {
       if (rhs.dim() == 0)
