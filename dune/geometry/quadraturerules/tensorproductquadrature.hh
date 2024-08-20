@@ -32,58 +32,23 @@ namespace Dune
     typedef QuadratureRule<ctype, dim> Base;
     typedef QuadraturePoint<ctype, dim> QPoint;
     typedef typename QPoint::Vector Vector;
+    typedef QuadratureRule<ctype,dim-1> BaseQuadrature;
 
     friend class QuadratureRuleFactory<ctype,dim>;
 
-  public:
-
-    /**
-     * \brief Build a tensor-product quadrature rule with equal order in all dimensions.
-     *
-     * This tensor product rule for the geometry of type `GeometryType(topologyId,dim)`
-     * is build with equal order for the base geometry and the 1d-extension geometry.
-     *
-     * \param topologyId   The topology Id of the target geometry.
-     * \param order        Polynomial order of the sub quadratures rules in base and 1d.
-     * \param qt           Type of the quadrature formula to use for all dimensions.
-     **/
     TensorProductQuadratureRule (unsigned int topologyId, unsigned int order, QuadratureType::Enum qt)
       : Base( GeometryType(topologyId, dim), order )
     {
-      auto baseType = GeometryTypes::base(this->type());
-      auto& baseQuad = QuadratureRules<ctype,dim-1>::rule(baseType, order, qt);
-      if (this->type().isPrismatic())
+      constexpr static int bitSize = sizeof(unsigned int)*8;
+      std::bitset<bitSize> baseId(topologyId);
+      bool isPrism = baseId[dim-1];
+      baseId.reset(dim-1);
+      GeometryType baseType(baseId.to_ulong(), dim-1);
+      const BaseQuadrature & baseQuad = QuadratureRules<ctype,dim-1>::rule(baseType, order, qt);
+      if (isPrism)
         tensorProduct(baseQuad, order, qt);
       else
         conicalProduct(baseQuad, order, qt);
-    }
-
-
-    /**
-     * \brief Build a tensor-product quadrature rule as the product of two given rules.
-     *
-     * This tensor product rule for the geometry of type `GeometryType(topologyId,dim)`
-     * is build by combining a given rule for the base geometry and the 1d geometry.
-     *
-     * \param type      The geometry type of the target geometry.
-     * \param baseQuad  Quadrature rule for the base geometry.
-     * \param onedQuad  Quadrature rule for the 1d geometry.
-     **/
-    template <class BaseQuad, class OneDQuad>
-    TensorProductQuadratureRule (const GeometryType& type, const BaseQuad& baseQuad, const OneDQuad& onedQuad)
-      : Base( type, std::min(baseQuad.order(), onedQuad.order()) )
-    {
-      assert(type.dim() == dim);
-      static_assert(BaseQuad::d == dim-1);
-      static_assert(OneDQuad::d == 1);
-
-      // fill the quadrature points
-      if (type.isPrismatic())
-        tensorProduct(baseQuad, onedQuad);
-      else {
-        this->delivered_order = std::min(baseQuad.order(), onedQuad.order()-dim+1);
-        conicalProduct(baseQuad, onedQuad);
-      }
     }
 
     /**
@@ -93,21 +58,18 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    template <class BaseQuad>
-    void tensorProduct(const BaseQuad& baseQuad, unsigned int order, QuadratureType::Enum qt)
+    void tensorProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
     {
-      const auto& onedQuad = QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt);
-      tensorProduct(baseQuad, onedQuad);
-    }
+      typedef QuadratureRule<ctype,1> OneDQuadrature;
+      const OneDQuadrature & onedQuad =
+        QuadratureRules<ctype,1>::rule(GeometryTypes::line, order, qt);
 
-    template <class BaseQuad, class OneDQuad>
-    void tensorProduct(const BaseQuad& baseQuad, const OneDQuad& onedQuad)
-    {
       const unsigned int baseQuadSize = baseQuad.size();
       for( unsigned int bqi = 0; bqi < baseQuadSize; ++bqi )
       {
-        const auto& basePoint = baseQuad[bqi].position( );
-        const auto& baseWeight = baseQuad[bqi].weight( );
+        const typename QuadraturePoint<ctype, dim-1>::Vector &
+        basePoint = baseQuad[bqi].position( );
+        const ctype &baseWeight = baseQuad[bqi].weight( );
 
         Vector point;
         for( unsigned int i = 0; i < dim-1; ++i )
@@ -121,8 +83,6 @@ namespace Dune
         }
       }
     }
-
-
 
     /** \brief Creates quadrature rule by conical multiplication of an arbitrary rule with a rule for a one-dimensional domain
      *
@@ -153,8 +113,7 @@ namespace Dune
      * \param order Requested order of the one-dimensional rule
      * \param qt Type of the one-dimensional rule
      */
-    template <class BaseQuad>
-    void conicalProduct(const BaseQuad& baseQuad, unsigned int order, QuadratureType::Enum qt)
+    void conicalProduct(const BaseQuadrature & baseQuad, unsigned int order, QuadratureType::Enum qt)
     {
       typedef QuadratureRule<ctype,1> OneDQuadrature;
 
@@ -168,18 +127,12 @@ namespace Dune
         respectWeightFunction = true;
       }
 
-      conicalProduct(baseQuad, onedQuad, respectWeightFunction);
-    }
-
-    template <class BaseQuad, class OneDQuad>
-    void conicalProduct(const BaseQuad& baseQuad, const OneDQuad& onedQuad,
-                        bool respectWeightFunction = false)
-    {
       const unsigned int baseQuadSize = baseQuad.size();
       for( unsigned int bqi = 0; bqi < baseQuadSize; ++bqi )
       {
-        const auto& basePoint = baseQuad[bqi].position( );
-        const auto& baseWeight = baseQuad[bqi].weight( );
+        const typename QuadraturePoint<ctype, dim-1>::Vector &
+        basePoint = baseQuad[bqi].position( );
+        const ctype &baseWeight = baseQuad[bqi].weight( );
 
         const unsigned int onedQuadSize = onedQuad.size();
         for( unsigned int oqi = 0; oqi < onedQuadSize; ++oqi )
