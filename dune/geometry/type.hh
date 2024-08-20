@@ -488,9 +488,7 @@ namespace Dune
     /** \brief Return GeometryType of a conical construction with lhs as base  */
     inline constexpr GeometryType conicalProduct(const GeometryType& lhs, const GeometryType& rhs)
     {
-      if (rhs.dim() == 0)
-        return lhs;
-      else if (rhs.dim() == 1)
+      if (rhs.isVertex())
         return conicalExtension(lhs);
       else {
         assert(rhs.isConical());

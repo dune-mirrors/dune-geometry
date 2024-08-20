@@ -59,15 +59,13 @@ int main(int /* argc */, char** /* argv */)
     suite.check(GeometryTypes::prismaticProduct(hex,line) == GeometryTypes::cube(4));
     suite.check(GeometryTypes::prismaticProduct(quad,quad) == GeometryTypes::cube(4));
 
-    suite.check(GeometryTypes::conicalProduct(vertex,line) == line);
-    suite.check(GeometryTypes::conicalProduct(line,vertex) == line);
-    suite.check(GeometryTypes::conicalProduct(line,line) == tri);
-    suite.check(GeometryTypes::conicalProduct(tri,line) == tet);
-    suite.check(GeometryTypes::conicalProduct(line,tri) == tet);
-    suite.check(GeometryTypes::conicalProduct(quad,line) == pyramid);
-    // suite.check(GeometryTypes::conicalProduct(line,quad) == pyramid); // ERROR: tet
-    suite.check(GeometryTypes::conicalProduct(tet,line) == GeometryTypes::simplex(4));
-    suite.check(GeometryTypes::conicalProduct(tri,tri) == GeometryTypes::simplex(4));
+    suite.check(GeometryTypes::conicalProduct(vertex,vertex) == line);
+    suite.check(GeometryTypes::conicalProduct(line,vertex) == tri);
+    suite.check(GeometryTypes::conicalProduct(line,line) == tet);
+    suite.check(GeometryTypes::conicalProduct(tri,vertex) == tet);
+    suite.check(GeometryTypes::conicalProduct(quad,vertex) == pyramid);
+    suite.check(GeometryTypes::conicalProduct(tet,vertex) == GeometryTypes::simplex(4));
+    suite.check(GeometryTypes::conicalProduct(tri,line) == GeometryTypes::simplex(4));
   }
 
   return suite.exit();
