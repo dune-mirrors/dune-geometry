@@ -91,7 +91,7 @@ namespace Dune {
        *
        *  \param[in]  c  codimension whose size is desired
        */
-      int size(int c) const
+      constexpr int size(int c) const
       {
         return _impl->size(c);
       }
@@ -108,7 +108,7 @@ namespace Dune {
        *  \param[in]  c   codimension of subentity E (0 <= c <= dim)
        *  \param[in]  cc  codimension whose size is desired (0 <= cc <= dim)
        */
-      int size(int i, int c, int cc) const
+      constexpr int size(int i, int c, int cc) const
       {
         return _impl->size(i,c,cc);
       }
@@ -127,7 +127,7 @@ namespace Dune {
        *  \param[in]  ii  number of subentity S (with respect to E)
        *  \param[in]  cc  codimension of subentity S (c <= cc <= dim)
        */
-      int subEntity(int i, int c, int ii, int cc) const
+      constexpr int subEntity(int i, int c, int ii, int cc) const
       {
         return _impl->subEntity(i,c,ii,cc);
       }
@@ -150,7 +150,7 @@ namespace Dune {
        *
        *  \returns An iterable range of numbers of the sub-subentities.
        */
-      auto subEntities ( int i, int c, int cc ) const
+      constexpr auto subEntities ( int i, int c, int cc ) const
       {
         return _impl->subEntities(i,c,cc);
       }
@@ -164,7 +164,7 @@ namespace Dune {
        *  \param[in]  i      number of subentity E (0 <= i < size( c ))
        *  \param[in]  c      codimension of subentity E
        */
-      GeometryType type(int i, int c) const
+      constexpr GeometryType type(int i, int c) const
       {
         return _impl->type(i,c);
       }
@@ -172,7 +172,7 @@ namespace Dune {
 
       /** \brief obtain the type of this reference element
        */
-      GeometryType type() const
+      constexpr GeometryType type() const
       {
         return _impl->type();
       }
@@ -187,7 +187,7 @@ namespace Dune {
        *  \param[in]  i   number of subentity E (0 <= i < size( c ))
        *  \param[in]  c   codimension of subentity E
        */
-      Coordinate position(int i, int c) const
+      constexpr Coordinate position(int i, int c) const
       {
         return _impl->position(i,c);
       }
@@ -200,7 +200,7 @@ namespace Dune {
        *
        *  \param[in]  local  coordinates of the point
        */
-      bool checkInside(const Coordinate& local) const
+      constexpr bool checkInside(const Coordinate& local) const
       {
         return _impl->checkInside(local);
       }
@@ -218,14 +218,14 @@ namespace Dune {
        *  \param[in]  i      number of subentity E (0 <= i < size( codim ))
        */
       template<int codim>
-      typename Codim<codim>::Geometry geometry(int i) const
+      constexpr typename Codim<codim>::Geometry geometry(int i) const
       {
         return _impl->template geometry<codim>(i);
       }
 
 
       /** \brief obtain the volume of the reference element */
-      CoordinateField volume() const
+      constexpr CoordinateField volume() const
       {
         return _impl->volume();
       }
@@ -238,7 +238,7 @@ namespace Dune {
        *
        *  \param[in]  face  index of the face, whose normal is desired
        */
-      Coordinate integrationOuterNormal(int face) const
+      constexpr Coordinate integrationOuterNormal(int face) const
       {
         return _impl->integrationOuterNormal(face);
       }
@@ -251,7 +251,7 @@ namespace Dune {
        * assigning a valid reference element (obtained from ReferenceElements), it may
        * be used without restrictions.
        */
-      ReferenceElement()
+      constexpr ReferenceElement()
         : _impl(nullptr)
       {}
 
@@ -260,19 +260,19 @@ namespace Dune {
        * \warning This method may only be called on valid reference elements.
        * \warning This method exposes undocumented internals that may change without notice!
        */
-      const Implementation& impl() const
+      constexpr const Implementation& impl() const
       {
         return *_impl;
       }
 
       //! Compares for equality with another reference element.
-      bool operator==(const ReferenceElement& r) const
+      constexpr bool operator==(const ReferenceElement& r) const
       {
         return _impl == r._impl;
       }
 
       //! Compares for inequality with another reference element.
-      bool operator!=(const ReferenceElement& r) const
+      constexpr bool operator!=(const ReferenceElement& r) const
       {
         return not (*this == r);
       }
@@ -292,11 +292,11 @@ namespace Dune {
       friend class Impl::ReferenceElementContainer<ctype,dimension>;
 
       // Constructor for wrapping an implementation reference (required internally by the default implementation)
-      ReferenceElement(const Implementation& impl)
+      constexpr ReferenceElement(const Implementation& impl)
         : _impl(&impl)
       {}
 
-      void setImplementation(const Implementation& impl)
+      constexpr void setImplementation(const Implementation& impl)
       {
         _impl = &impl;
       }

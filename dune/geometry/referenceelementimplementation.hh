@@ -15,12 +15,17 @@
 #include <array>
 #include <bitset>
 
+#include <dune/common/std/span.hh>
+
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/iteratorrange.hh>
 #include <dune/common/math.hh>
+#include <dune/common/indices.hh>
+#include <dune/common/tuplevector.hh>
+
 
 #include <dune/geometry/referenceelement.hh>
 #include <dune/geometry/affinegeometry.hh>
@@ -58,27 +63,181 @@ namespace Dune
       using Dune::Impl::pyramidConstruction;
       using Dune::Impl::numTopologies;
 
-      /** \brief Compute the number of subentities of a given codimension */
-      unsigned int size ( unsigned int topologyId, int dim, int codim );
+      // /** \brief Compute the number of subentities of a given codimension */
+      // unsigned int size ( unsigned int topologyId, int dim, int codim );
 
 
 
-      /** \brief Compute the topology id of a given subentity
-       *
-       * \param topologyId Topology id of entity
-       * \param dim Dimension of entity
-       * \param codim Codimension of the subentity that we are interested in
-       * \param i Number of the subentity that we are interested in
-       */
-      unsigned int subTopologyId ( unsigned int topologyId, int dim, int codim, unsigned int i );
+      // /** \brief Compute the topology id of a given subentity
+      //  *
+      //  * \param topologyId Topology id of entity
+      //  * \param dim Dimension of entity
+      //  * \param codim Codimension of the subentity that we are interested in
+      //  * \param i Number of the subentity that we are interested in
+      //  */
+      // unsigned int subTopologyId ( unsigned int topologyId, int dim, int codim, unsigned int i );
+
+
+
+      // size
+      // ----
+
+      constexpr unsigned int size ( unsigned int topologyId, int dim, int codim )
+      {
+        assert( (dim >= 0) && (topologyId < numTopologies( dim )) );
+        assert( (0 <= codim) && (codim <= dim) );
+
+        if( codim > 0 )
+          {
+            const unsigned int baseId = baseTopologyId( topologyId, dim );
+            const unsigned int m = size( baseId, dim-1, codim-1 );
+
+            if( isPrism( topologyId, dim ) )
+              {
+                const unsigned int n = (codim < dim ? size( baseId, dim-1, codim ) : 0);
+                return n + 2*m;
+              }
+            else
+              {
+                assert( isPyramid( topologyId, dim ) );
+                const unsigned int n = (codim < dim ? size( baseId, dim-1, codim ) : 1);
+                return m+n;
+              }
+          }
+        else
+          return 1;
+      }
+
+
+
+      // subTopologyId
+      // -------------
+
+      constexpr unsigned int subTopologyId ( unsigned int topologyId, int dim, int codim, unsigned int i )
+      {
+        assert( i < size( topologyId, dim, codim ) );
+        const int mydim = dim - codim;
+
+        if( codim > 0 )
+          {
+            const unsigned int baseId = baseTopologyId( topologyId, dim );
+            const unsigned int m = size( baseId, dim-1, codim-1 );
+
+            if( isPrism( topologyId, dim ) )
+              {
+                const unsigned int n = (codim < dim ? size( baseId, dim-1, codim ) : 0);
+                if( i < n )
+                  return subTopologyId( baseId, dim-1, codim, i ) | ((unsigned int)prismConstruction << (mydim - 1));
+                else
+                  return subTopologyId( baseId, dim-1, codim-1, (i < n+m ? i-n : i-(n+m)) );
+              }
+            else
+              {
+                assert( isPyramid( topologyId, dim ) );
+                if( i < m )
+                  return subTopologyId( baseId, dim-1, codim-1, i );
+                else if( codim < dim )
+                  return subTopologyId( baseId, dim-1, codim, i-m ) | ((unsigned int)pyramidConstruction << (mydim - 1));
+                else
+                  return 0u;
+              }
+          }
+        else
+          return topologyId;
+      }
+
+
+      // // subTopologyNumbering
+      // // --------------------
+
+      // void subTopologyNumbering ( unsigned int topologyId, int dim, int codim, unsigned int i, int subcodim,
+      //                             unsigned int *beginOut, unsigned int *endOut );
 
 
 
       // subTopologyNumbering
       // --------------------
 
-      void subTopologyNumbering ( unsigned int topologyId, int dim, int codim, unsigned int i, int subcodim,
-                                  unsigned int *beginOut, unsigned int *endOut );
+      constexpr void subTopologyNumbering ( unsigned int topologyId, int dim, int codim, unsigned int i, int subcodim,
+                                  unsigned int *beginOut, unsigned int *endOut )
+      {
+        assert( (codim >= 0) && (subcodim >= 0) && (codim + subcodim <= dim) );
+        assert( i < size( topologyId, dim, codim ) );
+        assert( (endOut - beginOut) == size( subTopologyId( topologyId, dim, codim, i ), dim-codim, subcodim ) );
+
+        if( codim == 0 )
+          {
+            for( unsigned int j = 0; (beginOut + j) != endOut; ++j )
+              *(beginOut + j) = j;
+          }
+        else if( subcodim == 0 )
+          {
+            assert( endOut == beginOut + 1 );
+            *beginOut = i;
+          }
+        else
+          {
+            const unsigned int baseId = baseTopologyId( topologyId, dim );
+
+            const unsigned int m = size( baseId, dim-1, codim-1 );
+
+            const unsigned int mb = size( baseId, dim-1, codim+subcodim-1 );
+            const unsigned int nb = (codim + subcodim < dim ? size( baseId, dim-1, codim+subcodim ) : 0);
+
+            if( isPrism( topologyId, dim ) )
+              {
+                const unsigned int n = size( baseId, dim-1, codim );
+                if( i < n )
+                  {
+                    const unsigned int subId = subTopologyId( baseId, dim-1, codim, i );
+
+                    unsigned int *beginBase = beginOut;
+                    if( codim + subcodim < dim )
+                      {
+                        beginBase = beginOut + size( subId, dim-codim-1, subcodim );
+                        subTopologyNumbering( baseId, dim-1, codim, i, subcodim, beginOut, beginBase );
+                      }
+
+                    const unsigned int ms = size( subId, dim-codim-1, subcodim-1 );
+                    subTopologyNumbering( baseId, dim-1, codim, i, subcodim-1, beginBase, beginBase+ms );
+                    for( unsigned int j = 0; j < ms; ++j )
+                      {
+                        *(beginBase+j) += nb;
+                        *(beginBase+j+ms) = *(beginBase+j) + mb;
+                      }
+                  }
+                else
+                  {
+                    const unsigned int s = (i < n+m ? 0 : 1);
+                    subTopologyNumbering( baseId, dim-1, codim-1, i-(n+s*m), subcodim, beginOut, endOut );
+                    for( unsigned int *it = beginOut; it != endOut; ++it )
+                      *it += nb + s*mb;
+                  }
+              }
+            else
+              {
+                assert( isPyramid( topologyId, dim ) );
+
+                if( i < m )
+                  subTopologyNumbering( baseId, dim-1, codim-1, i, subcodim, beginOut, endOut );
+                else
+                  {
+                    const unsigned int subId = subTopologyId( baseId, dim-1, codim, i-m );
+                    const unsigned int ms = size( subId, dim-codim-1, subcodim-1 );
+
+                    subTopologyNumbering( baseId, dim-1, codim, i-m, subcodim-1, beginOut, beginOut+ms );
+                    if( codim+subcodim < dim )
+                      {
+                        subTopologyNumbering( baseId, dim-1, codim, i-m, subcodim, beginOut+ms, endOut );
+                        for( unsigned int *it = beginOut + ms; it != endOut; ++it )
+                          *it += mb;
+                      }
+                    else
+                      *(beginOut + ms) = mb;
+                  }
+              }
+          }
+      }
 
 
 
@@ -111,7 +270,7 @@ namespace Dune
       // ----------------
 
       template< class ct, int cdim >
-      inline unsigned int
+      constexpr unsigned int
       referenceCorners ( unsigned int topologyId, int dim, FieldVector< ct, cdim > *corners )
       {
         assert( (dim >= 0) && (dim <= cdim) );
@@ -124,7 +283,11 @@ namespace Dune
             assert( nBaseCorners == size( baseTopologyId( topologyId, dim ), dim-1, dim-1 ) );
             if( isPrism( topologyId, dim ) )
               {
-                std::copy( corners, corners + nBaseCorners, corners + nBaseCorners );
+                // pre: first face of the prism has correct corners
+                // copy corners of first face to the opposite side (second half of the corners)
+                for(std::size_t i = 0; i != nBaseCorners; ++i)
+                  corners[ i+nBaseCorners ] = corners[i];
+                // move opposite face by one
                 for( unsigned int i = 0; i < nBaseCorners; ++i )
                   corners[ i+nBaseCorners ][ dim-1 ] = ct( 1 );
                 return 2*nBaseCorners;
@@ -148,10 +311,27 @@ namespace Dune
       // referenceVolume
       // ---------------
 
-      unsigned long referenceVolumeInverse ( unsigned int topologyId, int dim );
+      // unsigned long referenceVolumeInverse ( unsigned int topologyId, int dim );
+
+      // ReferenceVolumeInverse
+      // ----------------------
+
+      constexpr unsigned long referenceVolumeInverse ( unsigned int topologyId, int dim )
+      {
+        assert( (dim >= 0) && (topologyId < numTopologies( dim )) );
+
+        if( dim > 0 )
+          {
+            unsigned int baseValue = referenceVolumeInverse( baseTopologyId( topologyId, dim ), dim-1 );
+            return (isPrism( topologyId, dim ) ? baseValue : baseValue * (unsigned long)dim);
+          }
+        else
+          return 1;
+      }
+
 
       template< class ct >
-      inline ct referenceVolume ( unsigned int topologyId, int dim )
+      constexpr ct referenceVolume ( unsigned int topologyId, int dim )
       {
         return ct( 1 ) / ct( referenceVolumeInverse( topologyId, dim ) );
       }
@@ -162,7 +342,7 @@ namespace Dune
       // ----------------
 
       template< class ct, int cdim >
-      inline unsigned int
+      constexpr unsigned int
       referenceOrigins ( unsigned int topologyId, int dim, int codim, FieldVector< ct, cdim > *origins )
       {
         assert( (dim >= 0) && (dim <= cdim) );
@@ -209,7 +389,7 @@ namespace Dune
       // -------------------
 
       template< class ct, int cdim, int mydim >
-      inline unsigned int
+      constexpr unsigned int
       referenceEmbeddings ( unsigned int topologyId, int dim, int codim,
                             FieldVector< ct, cdim > *origins,
                             FieldMatrix< ct, mydim, cdim > *jacobianTransposeds )
@@ -228,8 +408,10 @@ namespace Dune
                   jacobianTransposeds[ i ][ dim-codim-1 ][ dim-1 ] = ct( 1 );
 
                 const unsigned int m = referenceEmbeddings( baseId, dim-1, codim-1, origins+n, jacobianTransposeds+n );
-                std::copy( origins+n, origins+n+m, origins+n+m );
-                std::copy( jacobianTransposeds+n, jacobianTransposeds+n+m, jacobianTransposeds+n+m );
+                for(std::size_t i = 0; i != m; ++i){
+                  origins[n+m+i] = origins[n+i];
+                  jacobianTransposeds[n+m+i] = jacobianTransposeds[n+i];
+                }
                 for( unsigned int i = 0; i < m; ++i )
                   origins[ n+m+i ][ dim-1 ] = ct( 1 );
 
@@ -278,7 +460,7 @@ namespace Dune
       // --------------------------------
 
       template< class ct, int cdim >
-      inline unsigned int
+      constexpr unsigned int
       referenceIntegrationOuterNormals ( unsigned int topologyId, int dim,
                                          const FieldVector< ct, cdim > *origins,
                                          FieldVector< ct, cdim > *normals )
@@ -327,22 +509,19 @@ namespace Dune
           }
       }
 
-      template< class ct, int cdim >
-      inline unsigned int
-      referenceIntegrationOuterNormals ( unsigned int topologyId, int dim,
-                                         FieldVector< ct, cdim > *normals )
+      template< int dim, unsigned int topologyId, class ct, int cdim>
+      constexpr unsigned int
+      referenceIntegrationOuterNormals ( FieldVector< ct, cdim > *normals )
       {
         assert( (dim > 0) && (dim <= cdim) );
 
-        FieldVector< ct, cdim > *origins
-          = new FieldVector< ct, cdim >[ size( topologyId, dim, 1 ) ];
-        referenceOrigins( topologyId, dim, 1, origins );
+        constexpr std::size_t sz = size( topologyId, dim, 1 );
+        std::array<FieldVector< ct, cdim >, sz> origins;
+        referenceOrigins( topologyId, dim, 1, origins.data() );
 
         const unsigned int numFaces
-          = referenceIntegrationOuterNormals( topologyId, dim, origins, normals );
+          = referenceIntegrationOuterNormals( topologyId, dim, origins.data(), normals );
         assert( numFaces == size( topologyId, dim, 1 ) );
-
-        delete[] origins;
 
         return numFaces;
       }
@@ -411,19 +590,19 @@ namespace Dune
       };
 
       // ReferenceElement cannot be copied.
-      ReferenceElementImplementation ( const ReferenceElementImplementation& ) = delete;
+      constexpr ReferenceElementImplementation ( const ReferenceElementImplementation& ) = default;
 
       // ReferenceElementImplementation cannot be copied.
-      ReferenceElementImplementation& operator= ( const ReferenceElementImplementation& ) = delete;
+      constexpr ReferenceElementImplementation& operator= ( const ReferenceElementImplementation& ) = default;
 
       // ReferenceElementImplementation is default-constructible (required for storage in std::array)
-      ReferenceElementImplementation () = default;
+      constexpr ReferenceElementImplementation () = default;
 
       /** \brief number of subentities of codimension c
        *
        *  \param[in]  c  codimension whose size is desired
        */
-      int size ( int c ) const
+      constexpr int size ( int c ) const
       {
         assert( (c >= 0) && (c <= dim) );
         return info_[ c ].size();
@@ -440,7 +619,7 @@ namespace Dune
        *  \param[in]  c   codimension of subentity E (0 <= c <= dim)
        *  \param[in]  cc  codimension whose size is desired (0 <= cc <= dim)
        */
-      int size ( int i, int c, int cc ) const
+      constexpr int size ( int i, int c, int cc ) const
       {
         assert( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].size( cc );
@@ -459,7 +638,7 @@ namespace Dune
        *  \param[in]  ii  number of subentity S (with respect to E)
        *  \param[in]  cc  codimension of subentity S (c <= cc <= dim)
        */
-      int subEntity ( int i, int c, int ii, int cc ) const
+      constexpr int subEntity ( int i, int c, int ii, int cc ) const
       {
         assert( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].number( ii, cc );
@@ -480,7 +659,7 @@ namespace Dune
        *
        *  \returns An iterable range of numbers of the sub-subentities.
        */
-      auto subEntities ( int i, int c, int cc ) const
+      constexpr auto subEntities ( int i, int c, int cc ) const
       {
         assert( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].numbers( cc );
@@ -494,14 +673,14 @@ namespace Dune
        *  \param[in]  i      number of subentity E (0 <= i < size( c ))
        *  \param[in]  c      codimension of subentity E
        */
-      const GeometryType &type ( int i, int c ) const
+      constexpr GeometryType type ( int i, int c ) const
       {
         assert( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].type();
       }
 
       /** \brief obtain the type of this reference element */
-      const GeometryType &type () const { return type( 0, 0 ); }
+      constexpr GeometryType type () const { return type( 0, 0 ); }
 
       /** \brief position of the barycenter of entity (i,c)
        *
@@ -512,7 +691,7 @@ namespace Dune
        *  \param[in]  i   number of subentity E (0 <= i < size( c ))
        *  \param[in]  c   codimension of subentity E
        */
-      const Coordinate &position( int i, int c ) const
+      constexpr const Coordinate &position( int i, int c ) const
       {
         assert( (c >= 0) && (c <= dim) );
         return baryCenters_[ c ][ i ];
@@ -525,7 +704,7 @@ namespace Dune
        *
        *  \param[in]  local  coordinates of the point
        */
-      bool checkInside ( const Coordinate &local ) const
+      constexpr bool checkInside ( const Coordinate &local ) const
       {
         const ctype tolerance = ctype( 64 ) * std::numeric_limits< ctype >::epsilon();
         return Impl::template checkInside< ctype, dim >( type().id(), dim, local, tolerance );
@@ -543,13 +722,13 @@ namespace Dune
        *  \param[in]  i      number of subentity E (0 <= i < size( codim ))
        */
       template< int codim >
-      typename Codim< codim >::Geometry geometry ( int i ) const
+      constexpr typename Codim< codim >::Geometry geometry ( int i ) const
       {
         return std::get< codim >( geometries_ )[ i ];
       }
 
       /** \brief obtain the volume of the reference element */
-      Volume volume () const
+      constexpr Volume volume () const
       {
         return volume_;
       }
@@ -568,75 +747,180 @@ namespace Dune
       }
 
     private:
-      void initialize ( unsigned int topologyId )
+
+      // creates an nested tuple for every possible topologyId
+      template<class F>
+      static constexpr auto makeContainer(F f){
+        return unpackIntegerSequence([=](auto... topologyId){
+          return makeTupleVector(f(topologyId)...);
+        }, std::make_index_sequence<Impl::numTopologies(dim)>());
+      }
+
+      // creates a container for all (topologyId, codim, i)
+      static constexpr auto infos = makeContainer([](auto topologyId){
+        auto make_entity_info = [=](auto codim){
+            constexpr unsigned int size = Impl::size( topologyId, dim, codim );
+            std::array<SubEntityInfo, size> info{};
+            for( unsigned int i = 0; i < size; ++i )
+              info[ i ] = SubEntityInfo{ topologyId, codim, i };
+            return info;
+        };
+
+        return unpackIntegerSequence([=](auto... codim){
+          return makeTupleVector(make_entity_info(codim)...);
+        }, std::make_index_sequence<dim+1>());
+      });
+
+      // compute integration outer normals
+      static constexpr auto integrationNormals = makeContainer([](auto topologyId){
+        if constexpr ( dim > 0 )
+          {
+            using namespace Dune::Indices::Literals;
+            std::array<Coordinate, infos[topologyId][1_ic].size()> normals{};
+            Impl::referenceIntegrationOuterNormals<dim, topologyId>( &(normals[ 0 ]) );
+            return normals;
+          } else {
+            return std::array<Coordinate,0>{};
+          }
+      });
+
+      // creates a container for all baricenters
+      static constexpr auto baryCenters = makeContainer([](auto topologyId){
+
+        // compute corners
+        const std::size_t numVertices = infos[topologyId][index_constant<dim>()].size();
+        std::array<Coordinate, numVertices> baryCenter0{};
+        Impl::referenceCorners( topologyId, dim, baryCenter0.data() );
+
+
+        auto make_codim_barycenter = [=](auto codim){
+          constexpr std::size_t sz = infos[topologyId][codim].size();
+          std::array<Coordinate, sz> baryCenter{};
+            for( int i = 0; i < sz; ++i )
+              {
+                baryCenter[ i ] = Coordinate( ctype( 0 ) );
+                auto& info = infos[topologyId][codim][i];
+                const unsigned int numCorners = info.size( dim );
+                for( unsigned int j = 0; j < numCorners; ++j )
+                  baryCenter[ i ] += baryCenter0[ info.number( j, dim )];
+                baryCenter[ i ] *= ctype( 1 ) / ctype( numCorners );
+              }
+            return baryCenter;
+        };
+
+        return unpackIntegerSequence([=](auto... codim){
+          return makeTupleVector(make_codim_barycenter(codim)..., baryCenter0);
+        }, std::make_index_sequence<dim>());
+      });
+
+      // creates a container for all (topologyId, codim, i)
+      static constexpr auto geometries = makeContainer([](auto topologyId){
+
+        auto make_codim_geometry = [=](auto codim){
+
+          constexpr std::size_t sz = infos[topologyId][codim].size();
+          using namespace Indices::Literals;
+          std::array< FieldVector< ctype, dim > , sz> origins{};
+          std::array< FieldMatrix< ctype, dim - codim, dim >, sz > jacobianTransposeds{};
+          Impl::referenceEmbeddings( infos[topologyId][0_ic][ 0 ].type().id(), dim, codim, origins.data(), jacobianTransposeds.data() );
+
+          using Geometry = AffineGeometry< ctype, dim-codim, dim >;
+          std::array<Geometry, sz> geometry{};
+
+          for( std::size_t i = 0; i != sz; ++i )
+            geometry[i] = Geometry{ infos[topologyId][ codim ][ i ].type(), origins[ i ], jacobianTransposeds[ i ] };
+          return geometry;
+        };
+
+        return unpackIntegerSequence([=](auto... codim){
+          return makeTupleVector(make_codim_geometry(codim)...);
+        }, std::make_index_sequence<dim+1>());
+      });
+
+      constexpr void initialize ( unsigned int topologyId )
       {
         assert( topologyId < Impl::numTopologies( dim ) );
 
-        // set up subentities
-        for( int codim = 0; codim <= dim; ++codim )
-          {
-            const unsigned int size = Impl::size( topologyId, dim, codim );
-            info_[ codim ].resize( size );
-            for( unsigned int i = 0; i < size; ++i )
-              info_[ codim ][ i ].initialize( topologyId, codim, i );
-          }
-
-        // compute corners
-        const unsigned int numVertices = size( dim );
-        baryCenters_[ dim ].resize( numVertices );
-        Impl::referenceCorners( topologyId, dim, &(baryCenters_[ dim ][ 0 ]) );
-
-        // compute barycenters
-        for( int codim = 0; codim < dim; ++codim )
-          {
-            baryCenters_[ codim ].resize( size(codim) );
-            for( int i = 0; i < size( codim ); ++i )
-              {
-                baryCenters_[ codim ][ i ] = Coordinate( ctype( 0 ) );
-                const unsigned int numCorners = size( i, codim, dim );
-                for( unsigned int j = 0; j < numCorners; ++j )
-                  baryCenters_[ codim ][ i ] += baryCenters_[ dim ][ subEntity( i, codim, j, dim ) ];
-                baryCenters_[ codim ][ i ] *= ctype( 1 ) / ctype( numCorners );
-              }
-          }
+        Hybrid::switchCases(range(index_constant<Impl::numTopologies(dim)>()), topologyId, [&](auto topologyId_){
+          integrationNormals_ = integrationNormals[topologyId_];
+          Hybrid::forEach(range(index_constant<dim+1>()), [&](auto codim){
+            info_[codim] = infos[topologyId_][codim];
+            baryCenters_[codim] = baryCenters[topologyId_][codim];
+            geometries_[codim] = geometries[topologyId_][codim];
+          });
+        });
 
         // compute reference element volume
         volume_ = Impl::template referenceVolume< ctype >( topologyId, dim );
-
-        // compute integration outer normals
-        if( dim > 0 )
-          {
-            integrationNormals_.resize( size( 1 ) );
-            Impl::referenceIntegrationOuterNormals( topologyId, dim, &(integrationNormals_[ 0 ]) );
-          }
-
-        // set up geometries
-        Hybrid::forEach( std::make_index_sequence< dim+1 >{}, [ & ]( auto i ){ CreateGeometries< i >::apply( *this, geometries_ ); } );
       }
 
       template< int... codim >
-      static std::tuple< std::vector< typename Codim< codim >::Geometry >... >
+      static TupleVector< Std::span< const typename Codim< codim >::Geometry >... >
       makeGeometryTable ( std::integer_sequence< int, codim... > );
 
       /** \brief Type to store all subentities of all codimensions */
       typedef decltype( makeGeometryTable( std::make_integer_sequence< int, dim+1 >() ) ) GeometryTable;
 
       /** \brief The reference element volume */
-      ctype volume_;
+      ctype volume_ = {};
 
-      std::vector< Coordinate > baryCenters_[ dim+1 ];
-      std::vector< Coordinate > integrationNormals_;
+      std::array<Std::span<const Coordinate>, dim+1> baryCenters_;
+      Std::span< const Coordinate > integrationNormals_;
 
       /** \brief Stores all subentities of all codimensions */
       GeometryTable geometries_;
 
-      std::vector< SubEntityInfo > info_[ dim+1 ];
+      std::array<Std::span<const SubEntityInfo>, dim+1> info_;
     };
 
     /** \brief topological information about the subentities of a reference element */
     template< class ctype, int dim >
     struct ReferenceElementImplementation< ctype, dim >::SubEntityInfo
     {
+      // creates an nested tuple for every possible (topologyId, codim, i)
+      template<class F>
+      static constexpr auto makeContainer(F f){
+        auto make_size = [=](auto topologyId, auto codim){
+          constexpr std::size_t size = Impl::size( topologyId, dim, codim );
+          return unpackIntegerSequence([=](auto... i){
+            return makeTupleVector(f(topologyId, codim, i)...);
+          }, std::make_index_sequence<size>());
+        };
+
+        auto make_codims = [=](auto topologyId) {
+          return unpackIntegerSequence([=](auto... codim){
+            return makeTupleVector(make_size(topologyId, codim)...);
+          }, std::make_index_sequence<dim+1>());
+        };
+
+        return unpackIntegerSequence([=](auto... topologyId){
+          return makeTupleVector(make_codims(topologyId)...);
+        }, std::make_index_sequence<Impl::numTopologies(dim)>());
+      }
+
+      // construct all possible offsets for every (topologyId, codim, i) combination
+      constexpr static auto offsets = makeContainer([](auto topologyId, auto codim, auto i) {
+        const unsigned int subId = Impl::subTopologyId( topologyId, dim, codim, i );
+
+        // compute offsets
+        std::array<unsigned int, dim+2> offset{};
+        for( int cc = 0; cc <= codim; ++cc )
+          offset[ cc ] = 0;
+        for( int cc = codim; cc <= dim; ++cc )
+          offset[ cc+1 ] = offset[ cc ] + Impl::size( subId, dim-codim, cc-codim );
+        return offset;
+      });
+
+      // construct all possible numberings for every (topologyId, codim, i) combination
+      constexpr static auto numberings = makeContainer([](auto topologyId, auto codim, auto i) {
+        constexpr std::array<unsigned int, dim+2> offset = offsets[topologyId][codim][i];
+        std::array<unsigned int, offset[ dim+1 ]> numbering{};
+        for( int cc = codim; cc <= dim; ++cc )
+          Impl::subTopologyNumbering( topologyId, dim, codim, i, cc-codim, numbering.data()+offset[ cc ], numbering.data()+offset[ cc+1 ] );
+        return numbering;
+      });
+
+
       // Compute upper bound for the number of subsentities.
       // If someone knows an explicit formal feel free to
       // implement it here.
@@ -690,129 +974,85 @@ namespace Dune
 
       using NumberRange = typename Dune::IteratorRange<const unsigned int*>;
 
-      SubEntityInfo ()
-        : numbering_( nullptr )
+      constexpr SubEntityInfo ()
+        : numbering_(),
+        offset_{}
       {
-        std::fill( offset_.begin(), offset_.end(), 0 );
       }
 
-      SubEntityInfo ( const SubEntityInfo &other )
-        : offset_( other.offset_ ),
+      constexpr SubEntityInfo (unsigned int topologyId, int codim, unsigned int i)
+        : SubEntityInfo( )
+      {
+        const unsigned int subId = Impl::subTopologyId( topologyId, dim, codim, i );
+        type_ = GeometryType( subId, dim-codim );
+
+        Hybrid::switchCases(range(index_constant<Impl::numTopologies(dim)>()), topologyId, [&](auto topologyId_){
+          Hybrid::switchCases(range(index_constant<dim+1>()), codim, [&](auto codim_){
+            constexpr std::size_t size = Impl::size( topologyId_, dim, codim_ );
+            Hybrid::switchCases(range(index_constant<size>()), i, [&](auto i_){
+              offset_ = offsets[topologyId_][codim_][i_];
+              numbering_ = numberings[topologyId_][codim_][i_];
+            });
+          });
+        });
+
+        // initialize containsSubentity lookup-table
+        for(std::size_t cc=0; cc<= dim; ++cc)
+        {
+          unsigned long cc_bitset = 0;
+          for(std::size_t idx=0; idx<std::size_t(size(cc)); ++idx)
+            cc_bitset |= (1 << number(idx,cc));
+          containsSubentity_[cc] = SubEntityFlags{cc_bitset};
+        }
+      }
+
+      constexpr SubEntityInfo ( const SubEntityInfo &other )
+        : numbering_(other.numbering_),
+          offset_( other.offset_ ),
           type_( other.type_ ),
-          containsSubentity_( other.containsSubentity_ )
-      {
-        numbering_ = allocate();
-        std::copy( other.numbering_, other.numbering_ + capacity(), numbering_ );
-      }
+          containsSubentity_( other.containsSubentity_ ),
+      {}
 
-      ~SubEntityInfo () { deallocate( numbering_ ); }
+      ~SubEntityInfo () = default;
 
-      const SubEntityInfo &operator= ( const SubEntityInfo &other )
+      constexpr const SubEntityInfo &operator= ( const SubEntityInfo &other )
       {
-        type_ = other.type_;
+        numbering_ = other.numbering_;
         offset_ = other.offset_;
-
-        deallocate( numbering_ );
-        numbering_ = allocate();
-        std::copy( other.numbering_, other.numbering_ + capacity(), numbering_ );
-
+        type_ = other.type_;
         containsSubentity_ = other.containsSubentity_;
 
         return *this;
       }
 
-      int size ( int cc ) const
+      constexpr int size ( int cc ) const
       {
         assert( (cc >= 0) && (cc <= dim) );
         return (offset_[ cc+1 ] - offset_[ cc ]);
       }
 
-      int number ( int ii, int cc ) const
+      constexpr int number ( int ii, int cc ) const
       {
         assert( (ii >= 0) && (ii < size( cc )) );
         return numbering_[ offset_[ cc ] + ii ];
       }
 
-      auto numbers ( int cc ) const
+      constexpr auto numbers ( int cc ) const
       {
-        return SubEntityRange( numbering_ + offset_[ cc ], numbering_ + offset_[ cc+1 ], containsSubentity_[cc]);
+        return SubEntityRange( numbering_.begin() + offset_[ cc ], numbering_.begin() + offset_[ cc+1 ], containsSubentity_[cc]);
       }
 
-      const GeometryType &type () const { return type_; }
-
-      void initialize ( unsigned int topologyId, int codim, unsigned int i )
-      {
-        const unsigned int subId = Impl::subTopologyId( topologyId, dim, codim, i );
-        type_ = GeometryType( subId, dim-codim );
-
-        // compute offsets
-        for( int cc = 0; cc <= codim; ++cc )
-          offset_[ cc ] = 0;
-        for( int cc = codim; cc <= dim; ++cc )
-          offset_[ cc+1 ] = offset_[ cc ] + Impl::size( subId, dim-codim, cc-codim );
-
-        // compute subnumbering
-        deallocate( numbering_ );
-        numbering_ = allocate();
-        for( int cc = codim; cc <= dim; ++cc )
-          Impl::subTopologyNumbering( topologyId, dim, codim, i, cc-codim, numbering_+offset_[ cc ], numbering_+offset_[ cc+1 ] );
-
-        // initialize containsSubentity lookup-table
-        for(std::size_t cc=0; cc<= dim; ++cc)
-        {
-          containsSubentity_[cc].reset();
-          for(std::size_t idx=0; idx<std::size_t(size(cc)); ++idx)
-            containsSubentity_[cc][number(idx,cc)] = true;
-        }
-      }
+      constexpr GeometryType type () const { return type_; }
 
     protected:
-      int codim () const { return dim - type().dim(); }
-
-      unsigned int *allocate () { return (capacity() != 0 ? new unsigned int[ capacity() ] : nullptr); }
-      void deallocate ( unsigned int *ptr ) { delete[] ptr; }
-      unsigned int capacity () const { return offset_[ dim+1 ]; }
+      constexpr int codim () const { return dim - type().dim(); }
+      constexpr unsigned int capacity () const { return offset_[ dim+1 ]; }
 
     private:
-      unsigned int *numbering_;
+      Std::span<const unsigned int> numbering_;
       std::array< unsigned int, dim+2 > offset_;
       GeometryType type_;
       std::array< SubEntityFlags, dim+1> containsSubentity_;
-    };
-
-
-    template< class ctype, int dim >
-    template< int codim >
-    struct ReferenceElementImplementation< ctype, dim >::CreateGeometries
-    {
-      template< int cc >
-      static typename ReferenceElements< ctype, dim-cc >::ReferenceElement
-      subRefElement( const ReferenceElementImplementation< ctype, dim > &refElement, int i, std::integral_constant< int, cc > )
-      {
-        return ReferenceElements< ctype, dim-cc >::general( refElement.type( i, cc ) );
-      }
-
-      static typename ReferenceElements< ctype, dim >::ReferenceElement
-      subRefElement(const ReferenceElementImplementation< ctype, dim > &refElement,
-                    [[maybe_unused]] int i, std::integral_constant<int, 0>)
-      {
-        return refElement;
-      }
-
-      static void apply ( const ReferenceElementImplementation< ctype, dim > &refElement, GeometryTable &geometries )
-      {
-        const int size = refElement.size( codim );
-        std::vector< FieldVector< ctype, dim > > origins( size );
-        std::vector< FieldMatrix< ctype, dim - codim, dim > > jacobianTransposeds( size );
-        Impl::referenceEmbeddings( refElement.type().id(), dim, codim, &(origins[ 0 ]), &(jacobianTransposeds[ 0 ]) );
-
-        std::get< codim >( geometries ).reserve( size );
-        for( int i = 0; i < size; ++i )
-          {
-            typename Codim< codim >::Geometry geometry( subRefElement( refElement, i, std::integral_constant< int, codim >() ), origins[ i ], jacobianTransposeds[ i ] );
-            std::get< codim >( geometries ).push_back( geometry );
-          }
-      }
     };
 
 #endif // DOXYGEN

@@ -51,7 +51,7 @@ namespace Dune
         using value_type       = ReferenceElement;
         using const_iterator   = const value_type*;
 
-        ReferenceElementContainer ()
+        constexpr ReferenceElementContainer ()
         {
           for( unsigned int topologyId = 0; topologyId < numTopologies; ++topologyId )
             {
@@ -60,46 +60,46 @@ namespace Dune
             }
         }
 
-        const ReferenceElement& operator() ( const GeometryType &type ) const
+        constexpr const ReferenceElement& operator() ( const GeometryType &type ) const
         {
           assert( type.dim() == dim );
           return reference_elements_[ type.id() ];
         }
 
-        const ReferenceElement& simplex () const
+        constexpr const ReferenceElement& simplex () const
         {
           return reference_elements_[ Dune::GeometryTypes::simplex(dim).id() ];
         }
 
-        const ReferenceElement& cube () const
+        constexpr const ReferenceElement& cube () const
         {
           return reference_elements_[ Dune::GeometryTypes::cube(dim).id() ];
         }
 
-        const ReferenceElement& pyramid () const
+        constexpr const ReferenceElement& pyramid () const
         {
           return reference_elements_[ Dune::GeometryTypes::pyramid.id() ];
         }
 
-        const ReferenceElement& prism () const
+        constexpr const ReferenceElement& prism () const
         {
           return reference_elements_[ Dune::GeometryTypes::prism.id() ];
         }
 
-        const_iterator begin () const
+        constexpr const_iterator begin () const
         {
           return reference_elements_.data();
         }
 
-        const_iterator end () const
+        constexpr const_iterator end () const
         {
           return reference_elements_.data() + numTopologies;
         }
 
       private:
 
-        std::array<Implementation,numTopologies> implementations_;
-        std::array<ReferenceElement,numTopologies> reference_elements_;
+        std::array<Implementation,numTopologies> implementations_ = {};
+        std::array<ReferenceElement,numTopologies> reference_elements_ = {};
 
       };
 
@@ -140,6 +140,8 @@ namespace Dune
 
       using Container = Impl::ReferenceElementContainer< ctype, dim >;
 
+      static constexpr Container container_ = {};
+
     public:
 
       //! The reference element type.
@@ -152,40 +154,32 @@ namespace Dune
       using iterator         = Iterator;
 
       //! get general reference elements
-      static const ReferenceElement&
+      constexpr static const ReferenceElement&
       general ( const GeometryType& type )
       {
-        return container() ( type );
+        return container_ ( type );
       }
 
       //! get simplex reference elements
-      static const ReferenceElement& simplex ()
+      constexpr static const ReferenceElement& simplex ()
       {
-        return container().simplex();
+        return container_.simplex();
       }
 
       //! get hypercube reference elements
-      static const ReferenceElement& cube ()
+      constexpr static const ReferenceElement& cube ()
       {
-        return container().cube();
+        return container_.cube();
       }
 
-      static Iterator begin ()
+      constexpr static Iterator begin ()
       {
-        return container().begin();
+        return container_.begin();
       }
 
-      static Iterator end ()
+      constexpr static Iterator end ()
       {
-        return container().end();
-      }
-
-    private:
-
-      DUNE_EXPORT static const Container& container ()
-      {
-        static Container container;
-        return container;
+        return container_.end();
       }
     };
 

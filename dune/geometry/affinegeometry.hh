@@ -12,6 +12,8 @@
 
 #include <cmath>
 
+#include <dune/common/std/cmath.hh>
+
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 
@@ -50,7 +52,7 @@ namespace Dune
       typedef ct ctype;
 
       template< int m, int n >
-      static void Ax ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, n > &x, FieldVector< ctype, m > &ret )
+      constexpr static void Ax ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, n > &x, FieldVector< ctype, m > &ret )
       {
         for( int i = 0; i < m; ++i )
         {
@@ -61,7 +63,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static void ATx ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, m > &x, FieldVector< ctype, n > &ret )
+      constexpr static void ATx ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, m > &x, FieldVector< ctype, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -72,7 +74,7 @@ namespace Dune
       }
 
       template< int m, int n, int p >
-      static void AB ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, n, p > &B, FieldMatrix< ctype, m, p > &ret )
+      constexpr static void AB ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, n, p > &B, FieldMatrix< ctype, m, p > &ret )
       {
         for( int i = 0; i < m; ++i )
         {
@@ -86,7 +88,7 @@ namespace Dune
       }
 
       template< int m, int n, int p >
-      static void ATBT ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, p, m > &B, FieldMatrix< ctype, n, p > &ret )
+      constexpr static void ATBT ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, p, m > &B, FieldMatrix< ctype, n, p > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -100,7 +102,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static void ATA_L ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, n > &ret )
+      constexpr static void ATA_L ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -114,7 +116,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static void ATA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, n > &ret )
+      constexpr static void ATA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -133,7 +135,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static void AAT_L ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, m, m > &ret )
+      constexpr static void AAT_L ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, m, m > &ret )
       {
         /*
            if (m==2) {
@@ -156,7 +158,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static void AAT ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, m, m > &ret )
+      constexpr static void AAT ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, m, m > &ret )
       {
         for( int i = 0; i < m; ++i )
         {
@@ -174,7 +176,7 @@ namespace Dune
       }
 
       template< int n >
-      static void Lx ( const FieldMatrix< ctype, n, n > &L, const FieldVector< ctype, n > &x, FieldVector< ctype, n > &ret )
+      constexpr static void Lx ( const FieldMatrix< ctype, n, n > &L, const FieldVector< ctype, n > &x, FieldVector< ctype, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -185,7 +187,7 @@ namespace Dune
       }
 
       template< int n >
-      static void LTx ( const FieldMatrix< ctype, n, n > &L, const FieldVector< ctype, n > &x, FieldVector< ctype, n > &ret )
+      constexpr static void LTx ( const FieldMatrix< ctype, n, n > &L, const FieldVector< ctype, n > &x, FieldVector< ctype, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -196,7 +198,7 @@ namespace Dune
       }
 
       template< int n >
-      static void LTL ( const FieldMatrix< ctype, n, n > &L, FieldMatrix< ctype, n, n > &ret )
+      constexpr static void LTL ( const FieldMatrix< ctype, n, n > &L, FieldMatrix< ctype, n, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -214,7 +216,7 @@ namespace Dune
       }
 
       template< int n >
-      static void LLT ( const FieldMatrix< ctype, n, n > &L, FieldMatrix< ctype, n, n > &ret )
+      constexpr static void LLT ( const FieldMatrix< ctype, n, n > &L, FieldMatrix< ctype, n, n > &ret )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -232,9 +234,9 @@ namespace Dune
       }
 
       template< int n >
-      static bool cholesky_L ( const FieldMatrix< ctype, n, n > &A, FieldMatrix< ctype, n, n > &ret, const bool checkSingular = false )
+      constexpr static bool cholesky_L ( const FieldMatrix< ctype, n, n > &A, FieldMatrix< ctype, n, n > &ret, const bool checkSingular = false )
       {
-        using std::sqrt;
+        using Std::sqrt;
         for( int i = 0; i < n; ++i )
         {
           ctype &rii = ret[ i ][ i ];
@@ -267,7 +269,7 @@ namespace Dune
       }
 
       template< int n >
-      static ctype detL ( const FieldMatrix< ctype, n, n > &L )
+      constexpr static ctype detL ( const FieldMatrix< ctype, n, n > &L )
       {
         ctype det( 1 );
         for( int i = 0; i < n; ++i )
@@ -276,7 +278,7 @@ namespace Dune
       }
 
       template< int n >
-      static ctype invL ( FieldMatrix< ctype, n, n > &L )
+      constexpr static ctype invL ( FieldMatrix< ctype, n, n > &L )
       {
         ctype det( 1 );
         for( int i = 0; i < n; ++i )
@@ -298,7 +300,7 @@ namespace Dune
 
       // calculates x := L^{-1} x
       template< int n >
-      static void invLx ( FieldMatrix< ctype, n, n > &L, FieldVector< ctype, n > &x )
+      constexpr static void invLx ( FieldMatrix< ctype, n, n > &L, FieldVector< ctype, n > &x )
       {
         for( int i = 0; i < n; ++i )
         {
@@ -310,7 +312,7 @@ namespace Dune
 
       // calculates x := L^{-T} x
       template< int n >
-      static void invLTx ( FieldMatrix< ctype, n, n > &L, FieldVector< ctype, n > &x )
+      constexpr static void invLTx ( FieldMatrix< ctype, n, n > &L, FieldVector< ctype, n > &x )
       {
         for( int i = n; i > 0; --i )
         {
@@ -321,7 +323,7 @@ namespace Dune
       }
 
       template< int n >
-      static ctype spdDetA ( const FieldMatrix< ctype, n, n > &A )
+      constexpr static ctype spdDetA ( const FieldMatrix< ctype, n, n > &A )
       {
         // return A[0][0]*A[1][1]-A[1][0]*A[1][0];
         FieldMatrix< ctype, n, n > L;
@@ -330,7 +332,7 @@ namespace Dune
       }
 
       template< int n >
-      static ctype spdInvA ( FieldMatrix< ctype, n, n > &A )
+      constexpr static ctype spdInvA ( FieldMatrix< ctype, n, n > &A )
       {
         FieldMatrix< ctype, n, n > L;
         cholesky_L( A, L );
@@ -341,7 +343,7 @@ namespace Dune
 
       // calculate x := A^{-1} x
       template< int n >
-      static bool spdInvAx ( FieldMatrix< ctype, n, n > &A, FieldVector< ctype, n > &x, const bool checkSingular = false )
+      constexpr static bool spdInvAx ( FieldMatrix< ctype, n, n > &A, FieldVector< ctype, n > &x, const bool checkSingular = false )
       {
         FieldMatrix< ctype, n, n > L;
         const bool invertible = cholesky_L( A, L, checkSingular );
@@ -352,7 +354,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static ctype detATA ( const FieldMatrix< ctype, m, n > &A )
+      constexpr static ctype detATA ( const FieldMatrix< ctype, m, n > &A )
       {
         if( m >= n )
         {
@@ -370,10 +372,10 @@ namespace Dune
        *  implement the method integrationElement().
        */
       template< int m, int n >
-      static ctype sqrtDetAAT ( const FieldMatrix< ctype, m, n > &A )
+      constexpr static ctype sqrtDetAAT ( const FieldMatrix< ctype, m, n > &A )
       {
-        using std::abs;
-        using std::sqrt;
+        using Std::abs;
+        using Std::sqrt;
         // These special cases are here not only for speed reasons:
         // The general implementation aborts if the matrix is almost singular,
         // and the special implementation provide a stable way to handle that case.
@@ -412,10 +414,10 @@ namespace Dune
       // A^{-1}_L = (A^T A)^{-1} A^T
       // => A^{-1}_L A = I
       template< int m, int n >
-      static ctype leftInvA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, m > &ret )
+      constexpr static ctype leftInvA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, m > &ret )
       {
         static_assert((m >= n), "Matrix has no left inverse.");
-        using std::abs;
+        using Std::abs;
         if constexpr( (n == 2) && (m == 2) )
         {
           const ctype det = (A[ 0 ][ 0 ]*A[ 1 ][ 1 ] - A[ 1 ][ 0 ]*A[ 0 ][ 1 ]);
@@ -437,7 +439,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static bool leftInvAx ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, m > &x, FieldVector< ctype, n > &y )
+      constexpr static bool leftInvAx ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, m > &x, FieldVector< ctype, n > &y )
       {
         static_assert((m >= n), "Matrix has no left inverse.");
         FieldMatrix< ctype, n, n > ata;
@@ -448,10 +450,10 @@ namespace Dune
 
       /** \brief Compute right pseudo-inverse of matrix A */
       template< int m, int n >
-      static ctype rightInvA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, m > &ret )
+      constexpr static ctype rightInvA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, m > &ret )
       {
         static_assert((n >= m), "Matrix has no right inverse.");
-        using std::abs;
+        using Std::abs;
         if constexpr( (n == 2) && (m == 2) )
         {
           const ctype det = (A[ 0 ][ 0 ]*A[ 1 ][ 1 ] - A[ 1 ][ 0 ]*A[ 0 ][ 1 ]);
@@ -473,7 +475,7 @@ namespace Dune
       }
 
       template< int m, int n >
-      static bool xTRightInvA ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, n > &x, FieldVector< ctype, m > &y )
+      constexpr static bool xTRightInvA ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, n > &x, FieldVector< ctype, m > &y )
       {
         static_assert((n >= m), "Matrix has no right inverse.");
         FieldMatrix< ctype, m, m > aat;
@@ -544,26 +546,30 @@ namespace Dune
      * used in any way except for assigning other affine geometries to it. After
      * assigning a valid geometry, it may be used without restrictions.
      */
-    AffineGeometry () = default;
+    constexpr AffineGeometry () = default;
+
+    constexpr AffineGeometry (AffineGeometry&&) = default;
+    constexpr AffineGeometry (const AffineGeometry&) = default;
+
 
     /** \brief Create affine geometry from reference element, one vertex, and the Jacobian matrix */
-    AffineGeometry ( const ReferenceElement &refElement, const GlobalCoordinate &origin,
+    constexpr AffineGeometry ( Dune::GeometryType gt, const GlobalCoordinate &origin,
                      const JacobianTransposed &jt )
-      : refElement_(refElement), origin_(origin), jacobianTransposed_(jt)
+      : type_(gt), origin_(origin), jacobianTransposed_(jt)
     {
       integrationElement_ = MatrixHelper::template rightInvA< mydimension, coorddimension >( jacobianTransposed_, jacobianInverseTransposed_ );
     }
 
     /** \brief Create affine geometry from GeometryType, one vertex, and the Jacobian matrix */
-    AffineGeometry ( Dune::GeometryType gt, const GlobalCoordinate &origin,
+    constexpr AffineGeometry ( const ReferenceElement &refElement, const GlobalCoordinate &origin,
                      const JacobianTransposed &jt )
-      : AffineGeometry(ReferenceElements::general( gt ), origin, jt)
+      : AffineGeometry(refElement.type(), origin, jt)
     { }
 
     /** \brief Create affine geometry from reference element and a vector of vertex coordinates */
     template< class CoordVector >
-    AffineGeometry ( const ReferenceElement &refElement, const CoordVector &coordVector )
-      : refElement_(refElement), origin_(coordVector[0])
+    constexpr AffineGeometry ( Dune::GeometryType gt, const CoordVector &coordVector )
+      : type_(gt), origin_(coordVector[0])
     {
       for( int i = 0; i < mydimension; ++i )
         jacobianTransposed_[ i ] = coordVector[ i+1 ] - origin_;
@@ -572,27 +578,30 @@ namespace Dune
 
     /** \brief Create affine geometry from GeometryType and a vector of vertex coordinates */
     template< class CoordVector >
-    AffineGeometry ( Dune::GeometryType gt, const CoordVector &coordVector )
-      : AffineGeometry(ReferenceElements::general( gt ), coordVector)
+    constexpr AffineGeometry ( const ReferenceElement &refElement, const CoordVector &coordVector )
+      : AffineGeometry(refElement.type(), coordVector)
     { }
+
+    constexpr AffineGeometry& operator=(const AffineGeometry&) = default;
+    constexpr AffineGeometry& operator=(AffineGeometry&&) = default;
 
     /** \brief Always true: this is an affine geometry */
     bool affine () const { return true; }
 
     /** \brief Obtain the type of the reference element */
-    Dune::GeometryType type () const { return refElement_.type(); }
+    constexpr Dune::GeometryType type () const { return type_; }
 
     /** \brief Obtain number of corners of the corresponding reference element */
-    int corners () const { return refElement_.size( mydimension ); }
+    constexpr int corners () const { return referenceElement(*this).size( mydimension ); }
 
     /** \brief Obtain coordinates of the i-th corner */
-    GlobalCoordinate corner ( int i ) const
+    constexpr GlobalCoordinate corner ( int i ) const
     {
-      return global( refElement_.position( i, mydimension ) );
+      return global( referenceElement(*this).position( i, mydimension ) );
     }
 
     /** \brief Obtain the centroid of the mapping's image */
-    GlobalCoordinate center () const { return global( refElement_.position( 0, 0 ) ); }
+    constexpr GlobalCoordinate center () const { return global( referenceElement(*this).position( 0, 0 ) ); }
 
     /** \brief Evaluate the mapping
      *
@@ -600,7 +609,7 @@ namespace Dune
      *
      *  \returns corresponding global coordinate
      */
-    GlobalCoordinate global ( const LocalCoordinate &local ) const
+    constexpr GlobalCoordinate global ( const LocalCoordinate &local ) const
     {
       GlobalCoordinate global( origin_ );
       jacobianTransposed_.umtv( local, global );
@@ -620,7 +629,7 @@ namespace Dune
      *  on the entire affine hull of the reference element.  This degenerates
      *  to the inverse map if the argument y is in the range of the map.
      */
-    LocalCoordinate local ( const GlobalCoordinate &global ) const
+    constexpr LocalCoordinate local ( const GlobalCoordinate &global ) const
     {
       LocalCoordinate local;
       jacobianInverseTransposed_.mtv( global - origin_, local );
@@ -637,15 +646,15 @@ namespace Dune
      *
      *  \returns the integration element \f$\mu(x)\f$.
      */
-    ctype integrationElement ([[maybe_unused]] const LocalCoordinate &local) const
+    constexpr ctype integrationElement ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return integrationElement_;
     }
 
     /** \brief Obtain the volume of the element */
-    Volume volume () const
+    constexpr Volume volume () const
     {
-      return integrationElement_ * refElement_.volume();
+      return integrationElement_ * referenceElement(*this).volume();
     }
 
     /** \brief Obtain the transposed of the Jacobian
@@ -654,7 +663,7 @@ namespace Dune
      *
      *  \returns a reference to the transposed of the Jacobian
      */
-    const JacobianTransposed &jacobianTransposed ([[maybe_unused]] const LocalCoordinate &local) const
+    constexpr const JacobianTransposed &jacobianTransposed ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return jacobianTransposed_;
     }
@@ -665,7 +674,7 @@ namespace Dune
      *  the Jacobian by \f$J(x)\f$, the following condition holds:
      *  \f[J^{-1}(x) J(x) = I.\f]
      */
-    const JacobianInverseTransposed &jacobianInverseTransposed ([[maybe_unused]] const LocalCoordinate &local) const
+    constexpr const JacobianInverseTransposed &jacobianInverseTransposed ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return jacobianInverseTransposed_;
     }
@@ -676,7 +685,7 @@ namespace Dune
      *
      *  \returns a copy of the transposed of the Jacobian
      */
-    Jacobian jacobian ([[maybe_unused]] const LocalCoordinate &local) const
+    constexpr Jacobian jacobian ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return jacobianTransposed_.transposed();
     }
@@ -687,22 +696,22 @@ namespace Dune
      *  the Jacobian by \f$J(x)\f$, the following condition holds:
      *  \f[J^{-1}(x) J(x) = I.\f]
      */
-    JacobianInverse jacobianInverse ([[maybe_unused]] const LocalCoordinate &local) const
+    constexpr JacobianInverse jacobianInverse ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return jacobianInverseTransposed_.transposed();
     }
 
-    friend ReferenceElement referenceElement ( const AffineGeometry &geometry )
+    friend constexpr ReferenceElement referenceElement ( const AffineGeometry &geometry )
     {
-      return geometry.refElement_;
+      return ReferenceElements::general( geometry.type() );
     }
 
   private:
-    ReferenceElement refElement_;
-    GlobalCoordinate origin_;
-    JacobianTransposed jacobianTransposed_;
-    JacobianInverseTransposed jacobianInverseTransposed_;
-    ctype integrationElement_;
+    Dune::GeometryType type_ = {};
+    GlobalCoordinate origin_ = {};
+    JacobianTransposed jacobianTransposed_ = {};
+    JacobianInverseTransposed jacobianInverseTransposed_ = {};
+    ctype integrationElement_ = {};
   };
 
 } // namespace Dune

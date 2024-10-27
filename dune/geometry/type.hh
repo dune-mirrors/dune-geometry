@@ -38,7 +38,7 @@ namespace Dune
      *
      *  \returns number of topologies for the dimension
      */
-    inline static unsigned int numTopologies ( int dim ) noexcept
+    constexpr static unsigned int numTopologies ( int dim ) noexcept
     {
       return (1u << dim);
     }
@@ -54,7 +54,7 @@ namespace Dune
      *  \returns true, if a pyramid construction was used to generate the
      *           codimension the topology.
      */
-    inline bool static isPyramid ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
+    constexpr bool static isPyramid ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
     {
       assert( (dim > 0) && (topologyId < numTopologies( dim )) );
       assert( (0 <= codim) && (codim < dim) );
@@ -72,7 +72,7 @@ namespace Dune
      *  \returns true, if a prism construction was used to generate the
      *           codimension the topology.
      */
-    inline static bool isPrism ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
+    constexpr static bool isPrism ( unsigned int topologyId, int dim, int codim = 0 ) noexcept
     {
       assert( (dim > 0) && (topologyId < numTopologies( dim )) );
       assert( (0 <= codim) && (codim < dim) );
@@ -86,7 +86,7 @@ namespace Dune
      *  \param[in]  codim         codimension for which the information is desired
      *                            (defaults to 1)
      */
-    inline static unsigned int baseTopologyId ( unsigned int topologyId, int dim, int codim = 1 ) noexcept
+    constexpr static unsigned int baseTopologyId ( unsigned int topologyId, int dim, int codim = 1 ) noexcept
     {
       assert( (dim >= 0) && (topologyId < numTopologies( dim )) );
       assert( (0 <= codim) && (codim <= dim) );
