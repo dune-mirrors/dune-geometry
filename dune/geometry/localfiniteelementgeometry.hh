@@ -206,8 +206,12 @@ public:
     assert(shapeValues.size() == vertices_.size());
 
     GlobalCoordinate out(0);
-    for (std::size_t i = 0; i < shapeValues.size(); ++i)
-      out.axpy(shapeValues[i], vertices_[i]);
+    for (std::size_t i = 0; i < shapeValues.size(); ++i) {
+      if constexpr(Dune::IsNumber<typename LocalBasisTraits::RangeType>::value)
+        out.axpy(shapeValues[i], vertices_[i]);
+      else
+        out.axpy(shapeValues[i][0], vertices_[i]);
+    }
 
     return out;
   }

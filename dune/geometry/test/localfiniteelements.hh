@@ -11,6 +11,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune::Impl {
 
@@ -231,8 +232,12 @@ public:
     lfe_.localBasis().evaluateFunction(local, shapeValues);
     assert(shapeValues.size() == coefficients_.size());
     Range range(0);
-    for (std::size_t i = 0; i < shapeValues.size(); ++i)
-      range.axpy(shapeValues[i], coefficients_[i]);
+    for (std::size_t i = 0; i < shapeValues.size(); ++i) {
+      if constexpr(Dune::IsNumber<LocalBasisRange>::value)
+        range.axpy(shapeValues[i], coefficients_[i]);
+      else
+        range.axpy(shapeValues[i][0], coefficients_[i]);
+    }
     return range;
   }
 
