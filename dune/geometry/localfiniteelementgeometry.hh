@@ -14,6 +14,8 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
+#include <dune/common/tensor.hh>
+#include <dune/common/tensordot.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
 
@@ -72,6 +74,9 @@ public:
 
   /// type of jacobian inverse transposed
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
+
+  /// type of the Hessian of the geometry mapping
+  using Hessian = Tensor<ctype, coorddimension, mydimension, mydimension>;
 
 public:
   /// type of reference element
@@ -310,13 +315,10 @@ public:
     localBasis().evaluateJacobian(local, shapeJacobians);
     assert(shapeJacobians.size() == vertices_.size());
 
-    Jacobian out(0);
-    for (std::size_t i = 0; i < shapeJacobians.size(); ++i) {
-      for (int j = 0; j < Jacobian::rows; ++j) {
-        shapeJacobians[i].umtv(vertices_[i][j], out[j]);
-      }
-    }
-    return out;
+    Jacobian J(0);
+    for (std::size_t i = 0; i < shapeJacobians.size(); ++i)
+      tensordotOut<0>(vertices_[i],shapeJacobians[i],J);
+    return J;
   }
 
   /**
@@ -353,6 +355,21 @@ public:
   JacobianInverseTransposed jacobianInverseTransposed (const LocalCoordinate& local) const
   {
     return jacobianInverse(local).transposed();
+  }
+
+  /**
+   * \brief Obtain the second derivative wrt. local coordinates of the geometry.
+   */
+  Hessian hessian (const LocalCoordinate& local) const
+  {
+    thread_local std::vector<typename LocalBasisTraits::JacobianType> shapeHessians;
+    localBasis().evaluateHessians(local, shapeHessians);
+    assert(shapeHessians.size() == vertices_.size());
+
+    Hessian H(0);
+    for (std::size_t i = 0; i < shapeHessians.size(); ++i)
+      tensordotOut<0>(vertices_[i],shapeHessians[i],H);
+    return H;
   }
 
   /// \brief Obtain the reference-element related to this geometry.

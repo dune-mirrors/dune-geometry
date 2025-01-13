@@ -14,6 +14,7 @@
 
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
+#include <dune/common/tensor.hh>
 
 #include <dune/geometry/type.hh>
 #include <dune/geometry/utility/defaultmatrixhelper.hh>
@@ -78,6 +79,9 @@ namespace Dune
 
     /** \brief Type for the inverse Jacobian matrix */
     typedef FieldMatrix< ctype, mydimension, coorddimension > JacobianInverse;
+
+    /** \brief type of the Hessian of the geometry mapping */
+    typedef Tensor<ctype, coorddimension, mydimension, mydimension> Hessian;
 
   private:
     //! type of reference element
@@ -241,6 +245,12 @@ namespace Dune
     JacobianInverse jacobianInverse ([[maybe_unused]] const LocalCoordinate &local) const
     {
       return jacobianInverseTransposed_.transposed();
+    }
+
+    /** \brief Hessian of this mapping is a zero tensor. */
+    Hessian hessian (const LocalCoordinate& /*local*/) const
+    {
+      return Hessian(0);
     }
 
     friend ReferenceElement referenceElement ( const AffineGeometry &geometry )
