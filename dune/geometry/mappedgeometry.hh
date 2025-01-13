@@ -16,6 +16,8 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
+#include <dune/common/tensor.hh>
+#include <dune/common/tensordot.hh>
 #include <dune/common/transpose.hh>
 #include <dune/geometry/affinegeometry.hh> // for FieldMatrixHelper
 #include <dune/geometry/quadraturerules.hh>
@@ -93,6 +95,9 @@ public:
 
   /// type of jacobian inverse transposed
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
+
+  /// type of the Hessian of the geometry mapping
+  using Hessian = Tensor<ctype, coorddimension, mydimension, mydimension>;
 
 private:
   using ReferenceElements = Dune::ReferenceElements<ctype, mydimension>;
@@ -310,6 +315,29 @@ public:
   JacobianInverseTransposed jacobianInverseTransposed (const LocalCoordinate& local) const
   {
     return transpose(jacobianInverse(local));
+  }
+
+  /**
+   * \brief Obtain the second derivative wrt. local coordinates of the geometry.
+   */
+  Hessian hessian (const LocalCoordinate& local) const
+    requires requires(DerivativeMapping dX) { derivative(dX); }
+  {
+    auto d2Mapping = derivative(*dMapping_);
+    auto g_local = geometry_.global(local);
+
+    auto&& Jg = geometry_.jacobian(local);
+    auto&& Hg = geometry_.hessian(local);
+    auto&& Jf = (*dMapping_)(g_local);
+    auto&& Hf = d2Mapping(g_local);
+
+    // H_{Iab} = Hf_{Ijk}*Jg_{ja}*Jg_{kb} + Jf_{Ij}*Hg_{jab}
+    Hessian H(0);
+    tensordotOut(
+      tensordot(Hf,std::index_sequence<1>{},Jg,std::index_sequence<0>{}),
+      std::index_sequence<2>{},Jg,std::index_sequence<0>{}, H);
+    tensordotOut(Jf,std::index_sequence<1>{},Hg,std::index_sequence<0>{}, H);
+    return H;
   }
 
   /// \brief Obtain the reference-element related to this geometry.

@@ -42,6 +42,17 @@ struct IdentityMatrix
   }
 };
 
+struct ZeroTensor
+{
+  // cast into Tensor
+  template <class K, std::size_t n0, std::size_t n1, std::size_t n2>
+  operator Tensor<K,n0,n1,n2> () const
+  {
+    Tensor<K,n0,n1,n2> Z(K(0));
+    return Z;
+  }
+};
+
 
 /**
  * \brief Represent an identity map on a reference element as geometry.
@@ -71,6 +82,7 @@ public:
   using JacobianTransposed = Impl::IdentityMatrix;
   using JacobianInverse = Impl::IdentityMatrix;
   using JacobianInverseTransposed = Impl::IdentityMatrix;
+  using Hessian = Impl::ZeroTensor;
 
 public:
   constexpr explicit ReferenceElementGeometry (const RefElem& refElem)
@@ -112,6 +124,12 @@ public:
   {
     return JacobianInverseTransposed{};
   }
+
+  /// \brief obtain the hessian, this is a zero tensor.
+  constexpr Hessian hessian (const LocalCoordinate& local) const noexcept
+  {
+    return Hessian{};
+  }
 };
 
 
@@ -146,6 +164,7 @@ public:
   using JacobianTransposed = typename Geometry::JacobianTransposed;
   using JacobianInverse = typename Geometry::JacobianInverse;
   using JacobianInverseTransposed = typename Geometry::JacobianInverseTransposed;
+  using Hessian = typename Geometry::Hessian;
 
 public:
   explicit LocalDerivativeGeometry (const Geometry& geometry) noexcept
@@ -175,6 +194,12 @@ public:
   JacobianInverseTransposed jacobianInverseTransposed (const LocalCoordinate& local) const
   {
     return geometry_.jacobianInverseTransposed(local);
+  }
+
+  /// \brief obtain the hessian
+  Hessian hessian (const LocalCoordinate& local) const
+  {
+    return geometry_.hessian(local);
   }
 
 private:

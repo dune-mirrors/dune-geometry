@@ -13,6 +13,7 @@
 
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
+#include <dune/common/tensor.hh>
 #include <dune/common/typetraits.hh>
 
 #include <dune/geometry/affinegeometry.hh>
@@ -208,6 +209,9 @@ namespace Dune
 
     /** \brief Type for the inverse Jacobian matrix */
     typedef FieldMatrix< ctype, mydimension, coorddimension > JacobianInverse;
+
+    /** \brief type of the Hessian of the geometry mapping */
+    typedef Tensor<ctype, coorddimension, mydimension, mydimension> Hessian;
 
   protected:
 
@@ -418,6 +422,20 @@ namespace Dune
     JacobianInverse jacobianInverse (const LocalCoordinate &local) const
     {
       return jacobianInverseTransposed(local).transposed();
+    }
+
+    /**
+    * \brief Obtain the second derivative wrt. local coordinates of the geometry.
+    */
+    Hessian hessian (const LocalCoordinate& local) const
+    {
+      Hessian H(0);
+      if (affine())
+        return H;
+      else {
+        DUNE_THROW(Dune::NotImplemented, "Hessian of multilinear geometry not yet implemented.");
+        return H;
+      }
     }
 
   protected:
