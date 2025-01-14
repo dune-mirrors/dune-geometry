@@ -6,8 +6,11 @@
 #define DUNE_GEOMETRY_TEST_LOCALFINITEELEMENT_HH
 
 #include <algorithm>
+#include <array>
+#include <numeric>
 #include <vector>
 
+#include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
@@ -64,6 +67,35 @@ public:
         out[i+1][0][j] = (i==j);
   }
 
+  /** \brief Evaluate partial derivatives of any order of all shape functions */
+  void partial(const std::array<unsigned int,dim>& order,
+                const typename Traits::DomainType& in,
+                std::vector<typename Traits::RangeType>& out) const
+  {
+    auto totalOrder = std::accumulate(order.begin(), order.end(), 0);
+    out.resize(size());
+
+    if (totalOrder == 0)
+      evaluateFunction(in, out);
+    else if (totalOrder == 1)
+    {
+      size_t direction = std::distance(order.begin(), std::find(order.begin(), order.end(), 1u));
+      for (size_t i=0; i<size(); i++)
+      {
+        out[i][0] = (i == direction);
+      }
+    }
+    else if (totalOrder == 2)
+    {
+      for (size_t i=0; i<size(); i++)
+      {
+        out[i][0] = 0;
+      }
+    }
+    else
+      DUNE_THROW(Dune::NotImplemented, "Partial derivative of order " << totalOrder << " is not implemented!");
+  }
+
   /// Polynomial order of the shape functions
   static constexpr unsigned int order () {  return 1; }
 };
@@ -76,7 +108,7 @@ public:
   using Traits = ScalarLocalBasisTraits<D,R,dim>;
 
   /// Number of shape functions
-  static constexpr unsigned int size () { return power(2, dim); }
+  static constexpr unsigned int size () { return Dune::power(2, dim); }
 
   /// Evaluate all shape functions
   void evaluateFunction (const typename Traits::DomainType& x,
@@ -119,8 +151,114 @@ public:
     }
   }
 
+  /** \brief Evaluate partial derivatives of any order of all shape functions */
+  void partial(const std::array<unsigned int,dim>& order,
+                const typename Traits::DomainType& in,
+                std::vector<typename Traits::RangeType>& out) const
+  {
+    auto totalOrder = std::accumulate(order.begin(), order.end(), 0);
+    out.resize(size());
+
+    if (totalOrder == 0)
+      evaluateFunction(in, out);
+    else if (totalOrder == 1)
+    {
+      auto direction = std::distance(order.begin(), std::find(order.begin(), order.end(), 1));
+      if (direction >= dim)
+        DUNE_THROW(Dune::RangeError, "Direction of partial derivative not found!");
+
+      // Loop over all shape functions
+      for (std::size_t i = 0; i < size(); ++i)
+      {
+        // Initialize: the overall expression is a product
+        // if j-th bit of i is set to 1, otherwise to -1
+        out[i] = (i & (1<<direction)) ? 1 : -1;
+
+        for (unsigned int j = 0; j < dim; ++j)
+        {
+          if (direction != j)
+            // if j-th bit of i is set multiply with in[j], else with 1-in[j]
+            out[i] *= (i & (1<<j)) ? in[j] :  1-in[j];
+        }
+      }
+    }
+    else if (totalOrder == 2)
+    {
+      for (size_t i=0; i<size(); i++)
+      {
+        // convert index i to multiindex
+        std::array<unsigned int,dim> alpha(multiindex(i));
+
+        // Initialize: the overall expression is a product
+        out[i][0] = 1.0;
+
+        // rest of the product
+        for (std::size_t l=0; l<dim; l++)
+        {
+          switch (order[l])
+          {
+            case 0:
+              out[i][0] *= p(alpha[l],in[l]);
+              break;
+            case 1:
+              out[i][0] *= dp(alpha[l],in[l]);
+              break;
+            case 2:
+              out[i][0] *= 0;
+              break;
+            default:
+              DUNE_THROW(Dune::NotImplemented, "Desired derivative order is not implemented");
+          }
+        }
+      }
+    }
+    else
+      DUNE_THROW(Dune::NotImplemented, "Partial derivative of order " << totalOrder << " is not implemented!");
+  }
+
   /// Polynomial order of the shape functions
   static constexpr unsigned int order () { return 1; }
+
+private:
+  // i-th Lagrange polynomial of degree k in one dimension
+  static R p(unsigned int i, D x)
+  {
+    R result(1.0);
+    for (unsigned int j=0; j<=1; j++)
+      if (j!=i) result *= (x-j)/((int)i-(int)j);
+    return result;
+  }
+
+  // derivative of ith Lagrange polynomial of degree k in one dimension
+  static R dp(unsigned int i, D x)
+  {
+    R result(0.0);
+
+    for (unsigned int j=0; j<=1; j++)
+    {
+      if (j!=i)
+      {
+        R prod( (1.0)/((int)i-(int)j) );
+        for (unsigned int l=0; l<=1; l++)
+          if (l!=i && l!=j)
+            prod *= (x-l)/((int)i-(int)l);
+        result += prod;
+      }
+    }
+    return result;
+  }
+
+  // Return i as a d-digit number in the (k+1)-nary system
+  static std::array<unsigned int,dim> multiindex (unsigned int i)
+  {
+    std::array<unsigned int,dim> alpha;
+    for (unsigned int j=0; j<dim; j++)
+    {
+      alpha[j] = i % 2;
+      i = i/2;
+    }
+    return alpha;
+  }
 };
 
 

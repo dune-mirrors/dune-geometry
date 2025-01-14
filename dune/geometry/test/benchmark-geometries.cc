@@ -47,6 +47,9 @@ bool benchmarkGeometry (const Geometry& geo)
     pass &= (geo.jacobianInverse(pos).M() == Geometry::coorddimension);
     pass &= (geo.jacobianInverseTransposed(pos).N() == Geometry::coorddimension);
     pass &= (geo.integrationElement(pos) > 0);
+
+    if constexpr(requires(Geometry geo, Dune::FieldVector<typename Geometry::ctype, Geometry::mydimension> pos) { geo.hessian(pos); })
+      pass &= (geo.hessian(pos).size() > 0);
   }
 
   return pass;
