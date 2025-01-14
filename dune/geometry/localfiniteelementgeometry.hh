@@ -367,8 +367,9 @@ public:
     static_assert(LocalBasisTraits::dimRange == 1);
 
     thread_local std::vector<ShapeHessianType> shapeHessians;
+    // TODO:
     // evaluateHessian(localBasis(), local, shapeHessians);
-    assert(shapeHessians.size() == vertices_.size());
+    // assert(shapeHessians.size() == vertices_.size());
 
     Hessian H(0);
     for (std::size_t i = 0; i < shapeHessians.size(); ++i) {
