@@ -317,7 +317,7 @@ public:
 
     Jacobian J(0);
     for (std::size_t i = 0; i < shapeJacobians.size(); ++i)
-      tensordotOut<0>(vertices_[i],shapeJacobians[i],J);
+      tensordotOut<0>(vertices_[i],shapeJacobians[i][0],J);
     return J;
   }
 
@@ -362,13 +362,20 @@ public:
    */
   Hessian hessian (const LocalCoordinate& local) const
   {
-    thread_local std::vector<typename LocalBasisTraits::JacobianType> shapeHessians;
-    localBasis().evaluateHessians(local, shapeHessians);
+    constexpr int dim = LocalBasisTraits::dimDomain;
+    using ShapeHessianType = Tensor<typename LocalBasisTraits::RangeFieldType, LocalBasisTraits::dimRange, dim, dim>;
+    static_assert(LocalBasisTraits::dimRange == 1);
+
+    thread_local std::vector<ShapeHessianType> shapeHessians;
+    // evaluateHessian(localBasis(), local, shapeHessians);
     assert(shapeHessians.size() == vertices_.size());
 
     Hessian H(0);
-    for (std::size_t i = 0; i < shapeHessians.size(); ++i)
-      tensordotOut<0>(vertices_[i],shapeHessians[i],H);
+    for (std::size_t i = 0; i < shapeHessians.size(); ++i) {
+      using E = Std::extents<typename ShapeHessianType::index_type,dim,dim>;
+      auto SH = TensorSpan{shapeHessians[i].container_data(), Std::layout_right::mapping<E>{}};
+      tensordotOut<0>(vertices_[i],SH,H);
+    }
     return H;
   }
 
