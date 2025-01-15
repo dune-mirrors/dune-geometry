@@ -74,6 +74,8 @@ namespace Dune {
     /** \brief Type used for the position of a quadrature point */
     typedef Dune::FieldVector<ct,dim> Vector;
 
+    QuadraturePoint () = default;
+
     //! set up quadrature of given order in d dimensions
     QuadraturePoint (const Vector& x, ct w) : local(x), weight_(w)
     {}
@@ -120,8 +122,8 @@ namespace Dune {
     }
 
   protected:
-    FieldVector<ct, dim> local;
-    ct weight_;
+    FieldVector<ct, dim> local{};
+    ct weight_{};
   };
 
   /** \brief Defines an \p enum for currently available quadrature rules.
@@ -353,7 +355,8 @@ namespace Dune {
 // 3d rules
 #include "quadraturerules/prismquadrature.hh"
 // general rules
-#include "quadraturerules/simplexquadrature.hh"
+#include "quadraturerules/trianglequadrature.hh"
+#include "quadraturerules/tetrahedronquadrature.hh"
 #include "quadraturerules/tensorproductquadrature.hh"
 
 #undef DUNE_INCLUDING_IMPLEMENTATION

@@ -9,12 +9,6 @@
 
 namespace Dune {
 
-  /** Singleton holding the Gauss points on the interval */
-  SimplexQuadraturePoints<2> SimplexQuadraturePointsSingleton<2>::sqp;
-
-  /** Singleton holding the SimplexQuadrature points dim==3 */
-  SimplexQuadraturePoints<3> SimplexQuadraturePointsSingleton<3>::sqp;
-
   /** Singleton holding the Prism Quadrature points  */
   PrismQuadraturePoints<3> PrismQuadraturePointsSingleton<3>::prqp;
 
