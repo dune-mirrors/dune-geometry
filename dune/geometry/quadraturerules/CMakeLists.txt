@@ -13,7 +13,8 @@ install(FILES
   numberfromstring.hh
   pointquadrature.hh
   prismquadrature.hh
-  simplexquadrature.hh
+  trianglequadrature.hh
+  tetrahedronquadrature.hh
   tensorproductquadrature.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/geometry/quadraturerules)
 
@@ -27,7 +28,8 @@ exclude_from_headercheck(
   jacobiNquadrature.hh
   pointquadrature.hh
   prismquadrature.hh
-  simplexquadrature.hh
+  trianglequadrature.hh
+  tetrahedronquadrature.hh
   tensorproductquadrature.hh")
 
 #build the library libquadraturerules
