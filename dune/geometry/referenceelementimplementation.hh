@@ -425,7 +425,7 @@ namespace Dune
        */
       int size ( int c ) const
       {
-        assert( (c >= 0) && (c <= dim) );
+        DUNE_ASSUME( (c >= 0) && (c <= dim) );
         return info_[ c ].size();
       }
 
@@ -442,7 +442,7 @@ namespace Dune
        */
       int size ( int i, int c, int cc ) const
       {
-        assert( (i >= 0) && (i < size( c )) );
+        DUNE_ASSUME( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].size( cc );
       }
 
@@ -461,7 +461,7 @@ namespace Dune
        */
       int subEntity ( int i, int c, int ii, int cc ) const
       {
-        assert( (i >= 0) && (i < size( c )) );
+        DUNE_ASSUME( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].number( ii, cc );
       }
 
@@ -482,7 +482,7 @@ namespace Dune
        */
       auto subEntities ( int i, int c, int cc ) const
       {
-        assert( (i >= 0) && (i < size( c )) );
+        DUNE_ASSUME( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].numbers( cc );
       }
 
@@ -496,7 +496,7 @@ namespace Dune
        */
       const GeometryType &type ( int i, int c ) const
       {
-        assert( (i >= 0) && (i < size( c )) );
+        DUNE_ASSUME( (i >= 0) && (i < size( c )) );
         return info_[ c ][ i ].type();
       }
 
@@ -514,7 +514,7 @@ namespace Dune
        */
       const Coordinate &position( int i, int c ) const
       {
-        assert( (c >= 0) && (c <= dim) );
+        DUNE_ASSUME( (c >= 0) && (c <= dim) );
         return baryCenters_[ c ][ i ];
       }
 
@@ -545,6 +545,7 @@ namespace Dune
       template< int codim >
       typename Codim< codim >::Geometry geometry ( int i ) const
       {
+        DUNE_ASSUME( (i >= 0) && (i < size( codim )) );
         return std::get< codim >( geometries_ )[ i ];
       }
 
@@ -564,6 +565,7 @@ namespace Dune
       const Coordinate &integrationOuterNormal ( int face ) const
       {
         assert( (face >= 0) && (face < int( integrationNormals_.size() )) );
+        DUNE_ASSUME( (face >= 0) && (face < int( integrationNormals_.size() )) );
         return integrationNormals_[ face ];
       }
 
@@ -571,6 +573,7 @@ namespace Dune
       void initialize ( unsigned int topologyId )
       {
         assert( topologyId < Impl::numTopologies( dim ) );
+        DUNE_ASSUME( topologyId < Impl::numTopologies( dim ) );
 
         // set up subentities
         for( int codim = 0; codim <= dim; ++codim )
@@ -724,12 +727,14 @@ namespace Dune
       int size ( int cc ) const
       {
         assert( (cc >= 0) && (cc <= dim) );
+        DUNE_ASSUME( (cc >= 0) && (cc <= dim) );
         return (offset_[ cc+1 ] - offset_[ cc ]);
       }
 
       int number ( int ii, int cc ) const
       {
         assert( (ii >= 0) && (ii < size( cc )) );
+        DUNE_ASSUME( (ii >= 0) && (ii < size( cc )) );
         return numbering_[ offset_[ cc ] + ii ];
       }
 

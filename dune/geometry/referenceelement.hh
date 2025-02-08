@@ -5,6 +5,8 @@
 #ifndef DUNE_GEOMETRY_REFERENCEELEMENT_HH
 #define DUNE_GEOMETRY_REFERENCEELEMENT_HH
 
+#include <cassert>
+
 #include <dune/geometry/type.hh>
 
 namespace Dune {
@@ -93,6 +95,7 @@ namespace Dune {
        */
       int size(int c) const
       {
+        assert( (c >= 0) && (c <= dimension) );
         return _impl->size(c);
       }
 
@@ -110,6 +113,7 @@ namespace Dune {
        */
       int size(int i, int c, int cc) const
       {
+        assert( (i >= 0) && (i < size( c )) );
         return _impl->size(i,c,cc);
       }
 
@@ -129,6 +133,7 @@ namespace Dune {
        */
       int subEntity(int i, int c, int ii, int cc) const
       {
+        assert( (i >= 0) && (i < size( c )) );
         return _impl->subEntity(i,c,ii,cc);
       }
 
@@ -152,6 +157,7 @@ namespace Dune {
        */
       auto subEntities ( int i, int c, int cc ) const
       {
+        assert( (i >= 0) && (i < size( c )) );
         return _impl->subEntities(i,c,cc);
       }
 
@@ -166,6 +172,7 @@ namespace Dune {
        */
       GeometryType type(int i, int c) const
       {
+        assert( (i >= 0) && (i < size( c )) );
         return _impl->type(i,c);
       }
 
@@ -189,6 +196,7 @@ namespace Dune {
        */
       Coordinate position(int i, int c) const
       {
+        assert( (c >= 0) && (c <= dimension) );
         return _impl->position(i,c);
       }
 
@@ -220,6 +228,7 @@ namespace Dune {
       template<int codim>
       typename Codim<codim>::Geometry geometry(int i) const
       {
+        assert( (i >= 0) && (i < size( codim )) );
         return _impl->template geometry<codim>(i);
       }
 
