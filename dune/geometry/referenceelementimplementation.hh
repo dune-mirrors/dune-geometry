@@ -21,6 +21,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/iteratorrange.hh>
 #include <dune/common/math.hh>
+#include <dune/common/std/assume.hh>
 
 #include <dune/geometry/referenceelement.hh>
 #include <dune/geometry/affinegeometry.hh>
