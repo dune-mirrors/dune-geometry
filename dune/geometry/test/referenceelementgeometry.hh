@@ -7,6 +7,7 @@
 
 #include <type_traits>
 
+#include <dune/common/densetensor.hh>
 #include <dune/geometry/referenceelements.hh>
 
 namespace Dune {
@@ -46,9 +47,9 @@ struct ZeroTensor
 {
   // cast into Tensor
   template <class K, std::size_t n0, std::size_t n1, std::size_t n2>
-  operator Tensor<K,n0,n1,n2> () const
+  operator DenseTensor<K,n0,n1,n2> () const
   {
-    Tensor<K,n0,n1,n2> Z(K(0));
+    DenseTensor<K,n0,n1,n2> Z(K(0));
     return Z;
   }
 };

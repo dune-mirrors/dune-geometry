@@ -11,10 +11,11 @@
 #include <type_traits>
 #include <vector>
 
+#include <dune/common/densetensor.hh>
+#include <dune/common/densetensorspan.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
-#include <dune/common/tensor.hh>
 #include <dune/common/tensordot.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
@@ -27,6 +28,52 @@
 #include <dune/geometry/utility/defaultmatrixhelper.hh>
 
 namespace Dune {
+namespace Impl {
+
+/**
+ * \brief Evaluation of the Hessian of all basis functions, assuming the range
+ * type is a vector and thus the Hessian is a 3-tensor
+ */
+template <class LocalBasis, class HessianType,
+          class Traits = typename LocalBasis::Traits>
+void evaluateHessian(const LocalBasis& localBasis,
+                     const typename Traits::DomainType& x,
+                     std::vector<HessianType>& out)
+{
+  using HessianTraits = TensorTraits<HessianType>;
+  using RangeTraits = TensorTraits<typename Traits::RangeType>;
+  static_assert(HessianTraits::rank() == 3);
+  static_assert(HessianTraits::rank_dynamic() == 0);
+  static_assert(RangeTraits::rank_dynamic() == 0);
+  static_assert(HessianTraits::static_extent(0) == RangeTraits::static_extent(0));
+  thread_local std::vector<typename Traits::RangeType> shapePartials;
+
+  out.resize(localBasis.size());
+  for (typename HessianTraits::index_type k = 0; k < HessianTraits::static_extent(1); ++k) {
+    // diagonal
+    std::array<unsigned int,Traits::dimDomain> orders{};
+    orders[k] = 2;
+    localBasis.partial(orders,x,shapePartials);
+    for (std::size_t i = 0; i < out.size(); ++i)
+      for (typename HessianTraits::index_type j = 0; j < HessianTraits::static_extent(0); ++j)
+        out[i][std::array{j,k,k}] = shapePartials[i][j];
+
+    for (typename HessianTraits::index_type l = 0; l < k; ++l) {
+      // off-diagonals
+      std::array<unsigned int,Traits::dimDomain> orders{};
+      orders[k] = 1; orders[l] = 1;
+      localBasis.partial(orders,x,shapePartials);
+      for (std::size_t i = 0; i < out.size(); ++i) {
+        for (typename HessianTraits::index_type j = 0; j < HessianTraits::static_extent(0); ++j) {
+          out[i][std::array{j,k,l}] = shapePartials[i][j];
+          out[i][std::array{j,l,k}] = shapePartials[i][j];
+        }
+      }
+    }
+  }
+}
+
+} // end namespace Impl
 
 /**
  * \brief Geometry implementation based on local-basis function parametrization.
@@ -76,7 +123,7 @@ public:
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
   /// type of the Hessian of the geometry mapping
-  using Hessian = Tensor<ctype, coorddimension, mydimension, mydimension>;
+  using Hessian = DenseTensor<ctype, coorddimension, mydimension, mydimension>;
 
 public:
   /// type of reference element
@@ -363,18 +410,17 @@ public:
   Hessian hessian (const LocalCoordinate& local) const
   {
     constexpr int dim = LocalBasisTraits::dimDomain;
-    using ShapeHessianType = Tensor<typename LocalBasisTraits::RangeFieldType, LocalBasisTraits::dimRange, dim, dim>;
+    using ShapeHessianType = DenseTensor<typename LocalBasisTraits::RangeFieldType, LocalBasisTraits::dimRange, dim, dim>;
     static_assert(LocalBasisTraits::dimRange == 1);
 
     thread_local std::vector<ShapeHessianType> shapeHessians;
-    // TODO:
-    // evaluateHessian(localBasis(), local, shapeHessians);
-    // assert(shapeHessians.size() == vertices_.size());
+    Impl::evaluateHessian(localBasis(), local, shapeHessians);
+    assert(shapeHessians.size() == vertices_.size());
 
     Hessian H(0);
     for (std::size_t i = 0; i < shapeHessians.size(); ++i) {
       using E = Std::extents<typename ShapeHessianType::index_type,dim,dim>;
-      auto SH = TensorSpan{shapeHessians[i].container_data(), Std::layout_right::mapping<E>{}};
+      auto SH = DenseTensorSpan{shapeHessians[i].container_data(), Std::layout_right::mapping<E>{}};
       tensordotOut<0>(vertices_[i],SH,H);
     }
     return H;

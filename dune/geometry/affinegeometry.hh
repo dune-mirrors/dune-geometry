@@ -12,9 +12,9 @@
 
 #include <cmath>
 
+#include <dune/common/densetensor.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
-#include <dune/common/tensor.hh>
 
 #include <dune/geometry/type.hh>
 #include <dune/geometry/utility/defaultmatrixhelper.hh>
@@ -81,7 +81,7 @@ namespace Dune
     typedef FieldMatrix< ctype, mydimension, coorddimension > JacobianInverse;
 
     /** \brief type of the Hessian of the geometry mapping */
-    typedef Tensor<ctype, coorddimension, mydimension, mydimension> Hessian;
+    typedef DenseTensor<ctype, coorddimension, mydimension, mydimension> Hessian;
 
   private:
     //! type of reference element

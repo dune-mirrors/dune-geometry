@@ -12,10 +12,10 @@
 
 #include <bitset>
 
+#include <dune/common/densetensor.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/diagonalmatrix.hh>
-#include <dune/common/tensor.hh>
 
 #include <dune/geometry/referenceelements.hh>
 #include <dune/geometry/type.hh>
@@ -110,7 +110,7 @@ namespace Dune {
     using JacobianInverse = std::conditional_t<dim==coorddim, DiagonalMatrix<ctype,dim>, FieldMatrix<ctype,dim,coorddim> >;
 
     /** \brief type of the Hessian of the geometry mapping */
-    using Hessian = Tensor<ctype, coorddimension, mydimension, mydimension>;
+    using Hessian = DenseTensor<ctype, coorddimension, mydimension, mydimension>;
 
     /** \brief Constructs an empty geometry.
      *

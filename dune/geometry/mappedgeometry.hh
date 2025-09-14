@@ -12,11 +12,11 @@
 #include <type_traits>
 
 #include <dune/common/copyableoptional.hh>
+#include <dune/common/densetensor.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
-#include <dune/common/tensor.hh>
 #include <dune/common/tensordot.hh>
 #include <dune/common/transpose.hh>
 #include <dune/geometry/quadraturerules.hh>
@@ -97,7 +97,7 @@ public:
   using JacobianInverseTransposed = FieldMatrix<ctype, coorddimension, mydimension>;
 
   /// type of the Hessian of the geometry mapping
-  using Hessian = Tensor<ctype, coorddimension, mydimension, mydimension>;
+  using Hessian = DenseTensor<ctype, coorddimension, mydimension, mydimension>;
 
 private:
   using ReferenceElements = Dune::ReferenceElements<ctype, mydimension>;
