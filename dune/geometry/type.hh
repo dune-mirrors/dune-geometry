@@ -143,7 +143,7 @@ namespace Dune
     // types by the compiler. That way, we avoid unfortunate implicit conversion chains, e.g.
     // people trying to work with GlobalGeometryTypeIndex, but forgetting to actually call
     // GlobalGeometryTypeIndex::index(gt) and just using gt directly.
-    enum class IdType : std::uint64_t
+    enum class IdType : std::uint_least64_t
     {};
 
   public:
@@ -191,7 +191,7 @@ namespace Dune
     {
       // recreate the exact storage layout that this class is using, making conversion
       // extremely cheap
-      std::uint64_t id = dim_ | (std::uint64_t(none_) << 8) | (std::uint64_t(topologyId_) << 32);
+      std::uint_least64_t id = dim_ | (std::uint_least64_t(none_) << 8) | (std::uint_least64_t(topologyId_) << 32);
       return static_cast<Id>(id);
     }
 
@@ -220,9 +220,9 @@ namespace Dune
      * \sa Id
      */
     constexpr GeometryType(Id id)
-      : dim_(static_cast<std::uint64_t>(id) & 0xFF)
-      , none_(static_cast<std::uint64_t>(id) & 0x100)
-      , topologyId_(static_cast<std::uint64_t>(id) >> 32)
+      : dim_(static_cast<std::uint_least64_t>(id) & 0xFF)
+      , none_(static_cast<std::uint_least64_t>(id) & 0x100)
+      , topologyId_(static_cast<std::uint_least64_t>(id) >> 32)
     {}
 
     /** @name Constructors */
