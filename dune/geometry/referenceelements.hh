@@ -41,7 +41,7 @@ namespace Dune
       template< class ctype, int dim >
       class ReferenceElementContainer
       {
-        static const unsigned int numTopologies = dim >= 0 ? (1u << dim) : 0;
+        static constexpr unsigned int numTopologies = dim >= 0 ? (1u << dim) : 0;
 
         using Implementation   = ReferenceElementImplementation< ctype, dim >;
 

@@ -47,10 +47,10 @@ public:
   using ctype = typename LocalBasisTraits::DomainFieldType;
 
   /// geometry dimension
-  static const int mydimension = LocalBasisTraits::dimDomain;
+  static constexpr int mydimension = LocalBasisTraits::dimDomain;
 
   /// coordinate dimension
-  static const int coorddimension = cdim;
+  static constexpr int coorddimension = cdim;
 
   /// type of local coordinates
   using LocalCoordinate = FieldVector<ctype, mydimension>;

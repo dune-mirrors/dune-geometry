@@ -80,7 +80,7 @@ namespace Dune {
     class iterator;
 
     //! export the dimension of the entity we provide information for
-    static const std::size_t dimension = dim;
+    static constexpr std::size_t dimension = dim;
     //! get type of the entity's geometry
     const GeometryType &type() const { return gt; }
 
