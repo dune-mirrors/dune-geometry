@@ -140,14 +140,14 @@ namespace Dune
      *  parameter <em>topologyId</em> is required.
      *  Here's an example:
      *  \code
-     *  static const unsigned int topologyId = GeometryTypes::simplex(dim).id();
+     *  static constexpr unsigned int topologyId = GeometryTypes::simplex(dim).id();
      *  \endcode
      */
     template< int dim >
     struct hasSingleGeometryType
     {
-      static const bool v = false;
-      static const unsigned int topologyId = ~0u;
+      static constexpr bool v = false;
+      static constexpr unsigned int topologyId = ~0u;
     };
   };
 
@@ -186,9 +186,9 @@ namespace Dune
     typedef ct ctype;
 
     //! geometry dimension
-    static const int mydimension= mydim;
+    static constexpr int mydimension= mydim;
     //! coordinate dimension
-    static const int coorddimension = cdim;
+    static constexpr int coorddimension = cdim;
 
     //! type of local coordinates
     typedef FieldVector< ctype, mydimension > LocalCoordinate;
@@ -219,7 +219,7 @@ namespace Dune
     typedef typename ReferenceElements::ReferenceElement ReferenceElement;
 
   private:
-    static const bool hasSingleGeometryType = Traits::template hasSingleGeometryType< mydimension >::v;
+    static constexpr bool hasSingleGeometryType = Traits::template hasSingleGeometryType< mydimension >::v;
 
   protected:
     typedef typename Traits::MatrixHelper MatrixHelper;

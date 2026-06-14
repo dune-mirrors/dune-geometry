@@ -41,7 +41,7 @@ namespace Dune
   struct TopologyFactory
   {
     // extract types from Traits class
-    static const unsigned int dimension = Traits::dimension;
+    static constexpr unsigned int dimension = Traits::dimension;
     typedef typename Traits::Key Key;
     typedef typename Traits::Object Object;
     typedef typename Traits::Factory Factory;
@@ -80,7 +80,7 @@ namespace Dune
   template <class Factory>
   struct TopologySingletonFactory
   {
-    static const unsigned int dimension = Factory::dimension;
+    static constexpr unsigned int dimension = Factory::dimension;
     typedef typename Factory::Key Key;
     typedef const typename Factory::Object Object;
 
@@ -122,7 +122,7 @@ namespace Dune
       return instance;
     }
 
-    static const unsigned int numTopologies = (1 << dimension);
+    static constexpr unsigned int numTopologies = (1 << dimension);
     typedef std::array< std::unique_ptr< Object, ObjectDeleter >, numTopologies > Array;
     typedef std::map< Key, Array > Storage;
 

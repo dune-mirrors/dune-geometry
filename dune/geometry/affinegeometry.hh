@@ -53,10 +53,10 @@ namespace Dune
     typedef ct ctype;
 
     /** \brief Dimension of the geometry */
-    static const int mydimension= mydim;
+    static constexpr int mydimension= mydim;
 
     /** \brief Dimension of the world space */
-    static const int coorddimension = cdim;
+    static constexpr int coorddimension = cdim;
 
     /** \brief Type for local coordinate vector */
     typedef FieldVector< ctype, mydimension > LocalCoordinate;

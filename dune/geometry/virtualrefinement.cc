@@ -567,7 +567,7 @@ namespace Dune
   template<class CoordType>
   class RefinementBuilder<1, CoordType>
   {
-    static const std::size_t dimension = 1;
+    static constexpr std::size_t dimension = 1;
   public:
     static
     VirtualRefinement<dimension, CoordType> &
@@ -589,7 +589,7 @@ namespace Dune
   template<class CoordType>
   class RefinementBuilder<3, CoordType>
   {
-    static const std::size_t dimension = 3;
+    static constexpr std::size_t dimension = 3;
   public:
     static
     VirtualRefinement<dimension, CoordType> &
