@@ -7,6 +7,13 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - ...
 
+## Deprecations and removals
+
+- Removed deprecated methods `Ax`, `ATx`, `AB`, and `ATA` from `FieldMatrixHelper`.
+  Use `A.mv`, `A.mtv`, `FMatrixHelp::multMatrix`, respectively
+  `FMatrixHelp::multTransposedMatrix` instead.
+
+
 # Release 2.11
 
 ## Deprecations and removals

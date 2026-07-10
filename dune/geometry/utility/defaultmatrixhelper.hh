@@ -21,30 +21,6 @@ struct FieldMatrixHelper
 {
   using ctype = ct;
 
-  //! Compute A*x and store the result in ret
-  template< int m, int n >
-  [[ deprecated("Use A.mv(x,y) instead.") ]]
-  static void Ax ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, n > &x, FieldVector< ctype, m > &ret )
-  {
-    A.mv(x,ret);
-  }
-
-  //! Compute A^T*x and store the result in ret
-  template< int m, int n >
-  [[ deprecated("Use A.mtv(x,y) instead.") ]]
-  static void ATx ( const FieldMatrix< ctype, m, n > &A, const FieldVector< ctype, m > &x, FieldVector< ctype, n > &ret )
-  {
-    A.mtv(x,ret);
-  }
-
-  //! Compute A*B and store the result in ret
-  template< int m, int n, int p >
-  [[ deprecated("Use FMatrixHelp::multMatrix(A,B,ret)") ]]
-  static void AB ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, n, p > &B, FieldMatrix< ctype, m, p > &ret )
-  {
-    FMatrixHelp::multMatrix(A,B,ret);
-  }
-
   //! Compute A^T*B^T and store the result in ret
   template< int m, int n, int p >
   static void ATBT ( const FieldMatrix< ctype, m, n > &A, const FieldMatrix< ctype, p, m > &B, FieldMatrix< ctype, n, p > &ret )
@@ -73,14 +49,6 @@ struct FieldMatrixHelper
           ret[ i ][ j ] += A[ k ][ i ] * A[ k ][ j ];
       }
     }
-  }
-
-  //! Compute A^T*A and store the result in ret
-  template< int m, int n >
-  [[ deprecated("Use FMatrixHelp::multTransposedMatrix(A,ret)") ]]
-  static void ATA ( const FieldMatrix< ctype, m, n > &A, FieldMatrix< ctype, n, n > &ret )
-  {
-    return FMatrixHelp::multTransposedMatrix(A,ret);
   }
 
   //! Compute A*A^T and store the lower triangular part in ret
