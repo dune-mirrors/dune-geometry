@@ -78,7 +78,8 @@ bool benchmarkGeometries (int nIter = 100)
     b[i] = ctype(i+1);
 
   // mapping to generate coordinates from reference-element corners
-  auto f = [&](Dune::FieldVector<ctype,gt.dim()> const& x) {
+  constexpr uint dimension = gt.dim();
+  auto f = [&](Dune::FieldVector<ctype,dimension> const& x) {
     Dune::FieldVector<ctype,cdim> y;
     A.mv(x,y);
     y += b;
