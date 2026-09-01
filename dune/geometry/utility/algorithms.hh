@@ -71,6 +71,9 @@ GaussNewtonErrorCode gaussNewton (const F& f, const DF& df, Range y, Domain& x0,
   R resNorm0 = dy.two_norm();
   R resNorm = 0;
 
+  if (resNorm0 < opts.absTol)
+    return GaussNewtonErrorCode::OK;
+
   for (int i = 0; i < opts.maxIt; ++i)
   {
     // Get descent direction dx: (J^T*J)dx = J^T*dy
