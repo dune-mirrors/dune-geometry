@@ -70,6 +70,7 @@ static bool testMappedGeometry (Timings& timings)
   auto geo = Dune::MultiLinearGeometry<ctype,gt.dim(),gt.dim()>{refElem, corners};
   auto geometry1 = Dune::MappedGeometry{mapping, geo, gt.isSimplex()};
   pass &= checkGeometry(geometry1);
+  pass &= (geometry1.local(geometry1.center()) - refElem.position(0,0)).two_norm() < 1.e-12;
   auto end1 = std::chrono::high_resolution_clock::now();
   auto elapsed_seconds1 = std::chrono::duration_cast<std::chrono::duration<double>>(end1 - start1);
   timings.time1 += elapsed_seconds1.count();
