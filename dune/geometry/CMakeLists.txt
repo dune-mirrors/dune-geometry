@@ -28,7 +28,7 @@ install(FILES
 )
 
 # install the header as done for the auto-tools
-install(FILES test/checkgeometry.hh
+install(FILES test/checkgeometry.hh test/referenceelementgeometry.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/geometry/test)
 
 target_sources(dunegeometry PRIVATE
