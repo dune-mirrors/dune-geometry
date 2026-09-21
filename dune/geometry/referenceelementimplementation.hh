@@ -524,11 +524,11 @@ namespace Dune
        *  reference element.
        *
        *  \param[in]  local  coordinates of the point
+       *  \param[in]  tol    optional tolerance for floating point comparison (default is 64*machine_eps)
        */
-      bool checkInside ( const Coordinate &local ) const
+      bool checkInside ( const Coordinate &local, const ctype tol ) const
       {
-        const ctype tolerance = ctype( 64 ) * std::numeric_limits< ctype >::epsilon();
-        return Impl::template checkInside< ctype, dim >( type().id(), dim, local, tolerance );
+        return Impl::template checkInside< ctype, dim >( type().id(), dim, local, tol );
       }
 
       /** \brief obtain the embedding of subentity (i,codim) into the reference

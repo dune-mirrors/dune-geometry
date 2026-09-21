@@ -86,6 +86,8 @@ namespace Dune {
       //! The dimension of the reference element.
       static constexpr int dimension = Implementation::dimension;
 
+      //! Default tolerance for checkInside method
+      static constexpr ctype tolerance = ctype(64)*std::numeric_limits< ctype >::epsilon();
 
       /** \brief number of subentities of codimension c
        *
@@ -198,11 +200,13 @@ namespace Dune {
        *  This method returns true if the given local coordinate is within this
        *  reference element.
        *
-       *  \param[in]  local  coordinates of the point
+       *  \param[in]  local coordinates of the point
+       *  \param[in]  tol   optional tolerance for floating point comparison (default is 64*machine_eps)
        */
-      bool checkInside(const Coordinate& local) const
+      bool checkInside(const Coordinate& local,
+                       const ctype tol = tolerance ) const
       {
-        return _impl->checkInside(local);
+        return _impl->checkInside(local, tol);
       }
 
 
