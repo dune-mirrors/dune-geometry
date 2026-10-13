@@ -11,7 +11,7 @@ include:
     file: 'jobs/common/master.yml'
 
 variables:
-  UPSTREAM_PROJECTS: "core/dune-common core/dune-geometry"
+  UPSTREAM_PROJECTS: "core/dune-common"
 
 before_script:
   - !reference [.upstream-fallback, script]
